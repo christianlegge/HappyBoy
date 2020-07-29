@@ -56,7 +56,7 @@ CPU::CPU(std::shared_ptr<Bus> bus) : bus(bus)
 }
 
 uint16_t CPU::tick() {
-	currentInterrupt = 0x0000;
+	currentInterrupt = 0x00FF;
 	if (shouldResetIme) {
 		ime = false;
 		shouldResetIme = false;
@@ -148,37 +148,37 @@ bool CPU::instructionComplete()
 
 void CPU::interrupt(uint16_t addr)
 {
-	return;
 	if (addr == 0x0040) {
 		IF.vblank = true;
-		if (!(ime && IE.vblank) && addr > currentInterrupt) {
+		if (!(ime && IE.vblank) || addr > currentInterrupt) {
 			return;
 		}
 	}
 	else if (addr == 0x0048) {
 		IF.lcdc = true;
-		if (!(ime && IE.lcdc) && addr > currentInterrupt) {
+		if (!(ime && IE.lcdc) || addr > currentInterrupt) {
 			return;
 		}
 	}
 	else if (addr == 0x0050) {
 		IF.timer = true;
-		if (!(ime && IE.timer) && addr > currentInterrupt) {
+		if (!(ime && IE.timer) || addr > currentInterrupt) {
 			return;
 		}
 	}
 	else if (addr == 0x0058) {
 		IF.serial = true;
-		if (!(ime && IE.serial) && addr > currentInterrupt) {
+		if (!(ime && IE.serial) || addr > currentInterrupt) {
 			return;
 		}
 	}
 	else if (addr == 0x0060) {
 		IF.joypad = true;
-		if (!(ime && IE.joypad) && addr > currentInterrupt) {
+		if (!(ime && IE.joypad) || addr > currentInterrupt) {
 			return;
 		}
 	}
+	std::cout << "triggered interrupt at addr" << pc << std::endl;
 	currentInterrupt = addr;
 	shouldResetIme = true;
 	write(--sp, pc >> 8);
@@ -1220,6 +1220,7 @@ void CPU::execute(Instruction ins)
 		ime = true;
 		pc = read(sp++);
 		pc |= read(sp++) << 8;
+		std::cout << "RETI to addr " << pc << std::endl;
 		break;
 	case 218:
 		if (flags.C == 1)

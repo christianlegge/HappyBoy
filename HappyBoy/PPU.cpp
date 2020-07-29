@@ -53,7 +53,9 @@ void PPU::tick()
 	if (cycles > (20 + 43 + 51) * 4) {
 		cycles = 0;
 		screenx = -1;
+
 		LY++;
+		STAT.screenmode = 2;
 		if (LY == 144) {
 			cpu->interrupt(0x0040);
 			STAT.screenmode = 3;

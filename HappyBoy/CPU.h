@@ -34,7 +34,7 @@ public:
 			bool joypad : 1;
 			uint8_t unused : 3;
 		};
-		uint8_t reg;
+		uint8_t reg = 0x00;
 	} IF;
 	union {
 		struct {
@@ -45,7 +45,7 @@ public:
 			bool joypad : 1;
 			uint8_t unused : 3;
 		};
-		uint8_t reg;
+		uint8_t reg = 0x00;
 	} IE;
 private:
 	union {
@@ -72,7 +72,7 @@ private:
 	uint16_t sp = 0xFFFE;
 	uint16_t pc = 0x0000;
 
-	bool ime;
+	bool ime = false;
 	bool shouldResetIme = false;
 	uint16_t currentInterrupt = 0x0000;
 	int cyclesRemaining = 0;
