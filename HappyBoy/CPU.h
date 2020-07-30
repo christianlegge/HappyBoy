@@ -94,6 +94,7 @@ private:
 	void sub(uint8_t* reg, int val);
 	void cp(int val);
 	void cb(uint8_t opcode);
+	uint8_t daa();
 
 	std::string registerString(uint8_t reg, std::string name);
 

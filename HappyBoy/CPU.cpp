@@ -440,7 +440,8 @@ void CPU::execute(Instruction ins)
 		h = ins.param8;
 		break;
 	case 39:
-		throw "Not implemented";
+		a += daa();
+		flags.Z = (a == 0);
 		break;
 	case 40:
 		if (flags.Z == 1)
@@ -1337,6 +1338,7 @@ void CPU::execute(Instruction ins)
 		break;
 	case 241:
 		flags.reg = read(sp++);
+		flags.reg &= 0xF0;
 		a = read(sp++);
 		break;
 	case 242:
@@ -1759,5 +1761,73 @@ void CPU::cb(uint8_t opcode)
 	case 7:
 		a = data;
 		break;
+	}
+}
+
+uint8_t CPU::daa()
+{
+	if (flags.N) {
+		if (flags.C) {
+			if (flags.H) {
+				return 0x9A;
+			}
+			else {
+				return 0xA0;
+			}
+		}
+		else {
+			if (flags.H) {
+				return 0xFA;
+			}
+			else {
+				return 0x00;
+			}
+		}
+	}
+	else {
+		if (flags.C) {
+			if ((a >> 4) < 0x03) {
+				if ((a & 0x0F) < 0x0A) {
+					return 0x60;
+				}
+				else {
+					return 0x66;
+				}
+			}
+			else {
+				return 0x66;
+			}
+		}
+		else {
+			if (flags.H) {
+				if ((a >> 4) < 0x0A) {
+					return 0x06;
+				}
+				else {
+					flags.C = true;
+					return 0x66;
+				}
+			}
+			else {
+				if ((a & 0x0F) < 0x0A) {
+					if ((a >> 4) < 0x0A) {
+						return 0x00;
+					}
+					else {
+						flags.C = true;
+						return 0x60;
+					}
+				}
+				else {
+					if ((a >> 4) < 0x09) {
+						return 0x06;
+					}
+					else {
+						flags.C = true;
+						return 0x66;
+					}
+				}
+			}
+		}
 	}
 }
