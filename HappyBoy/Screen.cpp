@@ -130,8 +130,14 @@ void Screen::Start()
 			}
 		}
 		else if (ppu->getScreenFrameReady()) {
+			frames++;
 			DrawScreen(0, 0);
 			dirtyData = true;
+			auto t2 = std::chrono::steady_clock::now();
+			if (!(frames % 10)) {
+				SDL_SetWindowTitle(window, ("HappyBoy - FPS: " + std::to_string((int)(1 / ((t2 - t1).count() / 1000000000.0f)))).c_str());
+			}
+			t1 = t2;
 		}
 
 		SDL_Color color;
@@ -143,16 +149,9 @@ void Screen::Start()
 		SDL_Rect rect = { width - 32, 4, 12, 24 };
 
 
-		auto t2 = std::chrono::steady_clock::now();
 
-		if (!(frames % 10)) {
-			SDL_SetWindowTitle(window, ("HappyBoy - FPS: " + std::to_string((int)(1 / ((t2 - t1).count() / 1000000000.0f)))).c_str());
-		}
-
-		t1 = t2;
 
 		SDL_RenderPresent(renderer);
-		frames++;
 	}
 
 	delete tileset;
