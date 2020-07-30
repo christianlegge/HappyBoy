@@ -18,7 +18,7 @@ private:
 	void DrawRegisters(int x, int y);
 	void DrawTileset(int x, int y);
 	void DrawTilemap(int x, int y);
-	void render_text(int x, int y, const char* text, TTF_Font* font, SDL_Rect* rect, SDL_Color* color);
+	void render_text(int x, int y, const char* text, TTF_Font* font, SDL_Color* color);
 	SDL_Window* window;
 	SDL_Renderer* renderer;
 	TTF_Font* font;

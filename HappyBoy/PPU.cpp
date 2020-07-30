@@ -21,6 +21,15 @@ void PPU::tick()
 		int tilex = (uint8_t)(screenx + SCX) / 8;
 		int tiley = (uint8_t)(LY + SCY) / 8;
 		int tilenum = read(mapaddr + tiley * 32 + tilex);
+		/*if (mapaddr == 0x9c00) {
+			int x = 0;
+		}
+		if (tilenum == 1) {
+			int x = 0;
+		}*/
+		if (setaddr == 0x8800) {
+			tilenum += 128;
+		}
 		int line = (uint8_t)(LY + SCY) % 8;
 
 		uint8_t linedata1 = read(setaddr + tilenum * 16 + line * 2);
@@ -62,6 +71,7 @@ void PPU::tick()
 		}
 	}
 	if (LY > 154) {
+		screenFrameReady = true;
 		LY = 0;
 		STAT.screenmode = 2;
 	}
@@ -84,6 +94,15 @@ color* PPU::getScreen()
 bool PPU::frameComplete()
 {
 	return LY == 0 && cycles == 0;
+}
+
+bool PPU::getScreenFrameReady()
+{
+	if (screenFrameReady) {
+		screenFrameReady = false;
+		return true;
+	}
+	return false;
 }
 
 void PPU::getTileset(color* tileset)

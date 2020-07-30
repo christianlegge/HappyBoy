@@ -14,6 +14,7 @@ public:
 	void step();
 	void frame();
 	bool paused = true;
+	uint16_t breakpoint = 0xffff;
 private:
 	std::shared_ptr<CPU> cpu;
 	std::shared_ptr<PPU> ppu;

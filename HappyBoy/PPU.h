@@ -18,6 +18,7 @@ public:
 	void tick();
 	color* getScreen();
 	bool frameComplete();
+	bool getScreenFrameReady();
 	union {
 		struct {
 			bool bg : 1;
@@ -69,5 +70,6 @@ private:
 	color screen[160 * 144];
 	color index[4] = { { 255, 255, 255 }, { 170, 170, 170 } ,{ 85, 85, 85 } ,{ 0, 0, 0 } };
 	uint8_t read(uint16_t addr);
+	bool screenFrameReady = false;
 };
 

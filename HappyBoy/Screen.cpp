@@ -35,28 +35,38 @@ void Screen::Start()
 	tilemap = new color[32 * 32 * 64];
 	uint16_t addr = 0x9800;
 
+	SDL_Color white = { 255, 255, 255, 255 };
+	SDL_Color black = { 0, 0, 0, 255 };
 
 	std::string text;
 	std::string composition;
 	Sint32 cursor;
 	Sint32 selection_len;
+	bool typing = false;
 
 	while (!quit){
 		if (SDL_PollEvent(&e)) {
 			if (e.type == SDL_EventType::SDL_QUIT) {
 				quit = true;
 			}
+			else if (e.type == SDL_EventType::SDL_TEXTINPUT) {
+				if (typing && (std::string)e.text.text != "i") {
+					dirtyData = true;
+					text += e.text.text;
+				}
+			}
 			else if (e.type == SDL_EventType::SDL_KEYDOWN) {
 				if (e.key.keysym.sym == SDLK_SPACE) {
 					clock->step();
 					dirtyData = true;
 				}
-				if (e.key.keysym.sym == SDLK_b) {
-					SDL_Rect rect = { 800, 800, 80, 16 };
-					SDL_StartTextInput();
-					SDL_SetTextInputRect(&rect);
+				if (e.key.keysym.sym == SDLK_i) {
+					if (clock->paused) {
+						typing = !typing;
+						text = "";
+					}
 				}
-				if (e.key.keysym.sym == SDLK_f) {
+				if (e.key.keysym.sym == SDLK_f && !typing) {
 					clock->frame();
 					dirtyData = true;
 				}
@@ -82,14 +92,11 @@ void Screen::Start()
 					addr -= 0x100;
 				}
 				if (e.key.keysym.sym == SDLK_RETURN) {
-					SDL_StopTextInput();
+					if (typing) {
+						clock->breakpoint = std::stoi(text, nullptr, 0x10);
+						typing = false;
+					}
 				}
-			}
-			/*else if (e.type == SDL_EventType::SDL_TEXTINPUT) {
-				text += e.text.text;
-			}*/
-			else if (e.type == SDL_EventType::SDL_TEXTEDITING) {
-				composition = e.edit.text;
 			}
 		}
 
@@ -97,16 +104,22 @@ void Screen::Start()
 			if (dirtyData) {
 				SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 				SDL_RenderClear(renderer);
+				render_text(800, 800, ("Breakpoint: " + text).c_str(), font, &white);
 				DrawDisasm(height * 144 / 160, 0, 40);
 				DrawMemory(height * 144 / 160 + 256, 154, addr);
 				DrawRegisters(height * 144 / 160 + 256, 0);
 				DrawTileset(height * 144 / 160 + 256 + 2, 584);
 				DrawTilemap(height * 144 / 160 + 256 + 8 * 16 + 32, 584);
 				DrawScreen(0, 0);
+				SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+				SDL_Rect pause1 = { width - 16, 4, 12, 24 };
+				SDL_Rect pause2 = { width - 32, 4, 12, 24 };
+				SDL_RenderFillRect(renderer, &pause1);
+				SDL_RenderFillRect(renderer, &pause2);
 				dirtyData = false;
 			}
 		}
-		else {
+		else if (ppu->getScreenFrameReady()) {
 			DrawScreen(0, 0);
 			dirtyData = true;
 		}
@@ -194,7 +207,7 @@ void Screen::DrawDisasm(int x, int y, int lines)
 	std::vector<std::string> disasm = cpu->getDisassembly(lines);
 
 	for (int i = 0; i < disasm.size(); i++) {
-		render_text(x, y + i * 16 + 1, disasm[i].c_str(), font, &rect, &color);
+		render_text(x, y + i * 16 + 1, disasm[i].c_str(), font, &color);
 	}
 }
 
@@ -215,7 +228,7 @@ void Screen::DrawMemory(int x, int y, uint16_t addr)
 	std::vector<std::string> mem = bus->getMemory(addr);
 
 	for (int i = 0; i < mem.size(); i++) {
-		render_text(x, y + i * 16 + 1, mem[i].c_str(), font, &rect, &color);
+		render_text(x, y + i * 16 + 1, mem[i].c_str(), font, &color);
 	}
 }
 
@@ -236,7 +249,7 @@ void Screen::DrawRegisters(int x, int y)
 	std::vector<std::string> reg = cpu->getRegisters();
 
 	for (int i = 0; i < reg.size(); i++) {
-		render_text(x, y + i * 16 + 1, reg[i].c_str(), font, &rect, &color);
+		render_text(x, y + i * 16 + 1, reg[i].c_str(), font, &color);
 	}
 }
 
@@ -298,18 +311,15 @@ void Screen::DrawTilemap(int x, int y)
 	//render_text(x, y, "Screen", font, &rect, &color);
 }
 
-void Screen::render_text(int x, int y, const char* text, TTF_Font* font, SDL_Rect* rect, SDL_Color* color)
+void Screen::render_text(int x, int y, const char* text, TTF_Font* font, SDL_Color* color)
 {
 	SDL_Surface* surface = TTF_RenderText_Solid(font, text, *color);
 	SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
 	if (!surface || !texture) {
 		return;
 	}
-	rect->x = x;
-	rect->y = y;
-	rect->w = surface->w;
-	rect->h = surface->h;
+	SDL_Rect rect = { x, y, surface->w, surface->h };
 	SDL_FreeSurface(surface);
-	SDL_RenderCopy(renderer, texture, NULL, rect);
+	SDL_RenderCopy(renderer, texture, NULL, &rect);
 	SDL_DestroyTexture(texture);
 }
