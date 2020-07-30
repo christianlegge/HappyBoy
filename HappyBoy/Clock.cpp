@@ -6,7 +6,7 @@ Clock::Clock(std::shared_ptr<CPU> cpu, std::shared_ptr<PPU> ppu, std::shared_ptr
 
 void Clock::tick()
 {
-	if (!paused) {
+	if (!paused && !cpu->stop) {
 		if (cpu->tick() == breakpoint) {
 			paused = true;
 		}
@@ -15,7 +15,7 @@ void Clock::tick()
 }
 
 void Clock::step() {
-	if (paused) {
+	if (paused && !cpu->stop) {
 		do {
 			cpu->tick();
 			ppu->tick();
@@ -24,7 +24,7 @@ void Clock::step() {
 }
 
 void Clock::frame() {
-	if (paused) {
+	if (paused && !cpu->stop) {
 		do {
 			cpu->tick();
 			ppu->tick();

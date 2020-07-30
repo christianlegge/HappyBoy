@@ -25,6 +25,7 @@ public:
 	std::vector<std::string> getRegisters();
 	bool instructionComplete();
 	void interrupt(uint16_t addr);
+	void reset();
 	union {
 		struct {
 			bool vblank : 1;
@@ -47,6 +48,7 @@ public:
 		};
 		uint8_t reg = 0x00;
 	} IE;
+	bool stop = false;
 private:
 	union {
 		struct {

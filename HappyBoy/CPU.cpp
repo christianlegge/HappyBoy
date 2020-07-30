@@ -185,6 +185,12 @@ void CPU::interrupt(uint16_t addr)
 	pc = addr;
 }
 
+void CPU::reset()
+{
+	stop = false;
+	pc = 0x0000;
+}
+
 Instruction CPU::fetch(bool setCycles) {
 	uint16_t addr = pc;
 	uint8_t opcode = read(pc++);
@@ -307,7 +313,7 @@ void CPU::execute(Instruction ins)
 		a = a | (flags.C << 7);
 		break;
 	case 16:
-		throw "Not implemented";
+		stop = true;
 		break;
 	case 17:
 		e = ins.param16 & 0xFF;

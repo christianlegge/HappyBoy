@@ -57,6 +57,9 @@ void Screen::Start()
 				}
 			}
 			else if (e.type == SDL_EventType::SDL_KEYDOWN) {
+				if (e.key.keysym.sym == SDLK_r) {
+					cpu->reset();
+				}
 				if (e.key.keysym.sym == SDLK_SPACE) {
 					clock->step();
 					dirtyData = true;
