@@ -259,8 +259,8 @@ void CPU::execute(Instruction ins)
 		uint16_t hl = (h << 8) | l;
 		uint16_t bc = (b << 8) | c;
 		uint16_t res = hl + bc;
-		h = (hl & 0xFF00) >> 8;
-		l = hl & 0xFF;
+		h = (res & 0xFF00) >> 8;
+		l = res & 0xFF;
 		if (hl + bc > 0xFFFF)
 		{
 			flags.C = 1;
@@ -351,8 +351,8 @@ void CPU::execute(Instruction ins)
 		uint16_t hl = (h << 8) | l;
 		uint16_t de = (b << 8) | c;
 		uint16_t res = hl + de;
-		h = (hl & 0xFF00) >> 8;
-		l = hl & 0xFF;
+		h = (res & 0xFF00) >> 8;
+		l = res & 0xFF;
 		if (hl + de > 0xFFFF)
 		{
 			flags.C = 1;
@@ -455,8 +455,8 @@ void CPU::execute(Instruction ins)
 		flags.N = 0;
 		uint16_t hl = (h << 8) | l;
 		uint16_t res = hl + hl;
-		h = (hl & 0xFF00) >> 8;
-		l = hl & 0xFF;
+		h = (res & 0xFF00) >> 8;
+		l = res & 0xFF;
 		if (hl + hl > 0xFFFF)
 		{
 			flags.C = 1;
@@ -552,8 +552,8 @@ void CPU::execute(Instruction ins)
 		flags.N = 0;
 		uint16_t hl = (h << 8) | l;
 		uint16_t res = hl + sp;
-		h = (hl & 0xFF00) >> 8;
-		l = hl & 0xFF;
+		h = (res & 0xFF00) >> 8;
+		l = res & 0xFF;
 		if (hl + sp > 0xFFFF)
 		{
 			flags.C = 1;
