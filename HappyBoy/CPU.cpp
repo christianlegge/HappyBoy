@@ -178,7 +178,6 @@ void CPU::interrupt(uint16_t addr)
 			return;
 		}
 	}
-	std::cout << "triggered interrupt at addr" << pc << std::endl;
 	currentInterrupt = addr;
 	shouldResetIme = true;
 	write(--sp, pc >> 8);
@@ -247,7 +246,7 @@ void CPU::execute(Instruction ins)
 		flags.H = 0;
 		flags.C = a & 0b10000000;
 		a = a << 1;
-		a = a & flags.C;
+		a = a | flags.C;
 		break;
 	case 8:
 		write(ins.param16, (sp >> 8));
@@ -257,8 +256,8 @@ void CPU::execute(Instruction ins)
 	{
 		tmp = h & 0b00001000;
 		flags.N = 0;
-		uint16_t hl = (h << 8) & l;
-		uint16_t bc = (b << 8) & c;
+		uint16_t hl = (h << 8) | l;
+		uint16_t bc = (b << 8) | c;
 		uint16_t res = hl + bc;
 		h = (hl & 0xFF00) >> 8;
 		l = hl & 0xFF;
@@ -349,8 +348,8 @@ void CPU::execute(Instruction ins)
 	{
 		tmp = h & 0b00001000;
 		flags.N = 0;
-		uint16_t hl = (h << 8) & l;
-		uint16_t de = (b << 8) & c;
+		uint16_t hl = (h << 8) | l;
+		uint16_t de = (b << 8) | c;
 		uint16_t res = hl + de;
 		h = (hl & 0xFF00) >> 8;
 		l = hl & 0xFF;
@@ -454,7 +453,7 @@ void CPU::execute(Instruction ins)
 	{
 		tmp = h & 0b00001000;
 		flags.N = 0;
-		uint16_t hl = (h << 8) & l;
+		uint16_t hl = (h << 8) | l;
 		uint16_t res = hl + hl;
 		h = (hl & 0xFF00) >> 8;
 		l = hl & 0xFF;
@@ -551,7 +550,7 @@ void CPU::execute(Instruction ins)
 	{
 		tmp = h & 0b00001000;
 		flags.N = 0;
-		uint16_t hl = (h << 8) & l;
+		uint16_t hl = (h << 8) | l;
 		uint16_t res = hl + sp;
 		h = (hl & 0xFF00) >> 8;
 		l = hl & 0xFF;
@@ -1220,7 +1219,6 @@ void CPU::execute(Instruction ins)
 		ime = true;
 		pc = read(sp++);
 		pc |= read(sp++) << 8;
-		std::cout << "RETI to addr " << pc << std::endl;
 		break;
 	case 218:
 		if (flags.C == 1)
