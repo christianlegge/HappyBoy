@@ -35,6 +35,12 @@ void Screen::Start()
 	tilemap = new color[32 * 32 * 64];
 	uint16_t addr = 0x9800;
 
+
+	std::string text;
+	std::string composition;
+	Sint32 cursor;
+	Sint32 selection_len;
+
 	while (!quit){
 		if (SDL_PollEvent(&e)) {
 			if (e.type == SDL_EventType::SDL_QUIT) {
@@ -43,51 +49,76 @@ void Screen::Start()
 			else if (e.type == SDL_EventType::SDL_KEYDOWN) {
 				if (e.key.keysym.sym == SDLK_SPACE) {
 					clock->step();
-					dirtyTileset = true;
-					dirtyTilemap = true;
+					dirtyData = true;
+				}
+				if (e.key.keysym.sym == SDLK_b) {
+					SDL_Rect rect = { 800, 800, 80, 16 };
+					SDL_StartTextInput();
+					SDL_SetTextInputRect(&rect);
 				}
 				if (e.key.keysym.sym == SDLK_f) {
 					clock->frame();
-					dirtyTileset = true;
-					dirtyTilemap = true;
+					dirtyData = true;
 				}
 				if (e.key.keysym.sym == SDLK_p) {
 					clock->paused = !clock->paused;
+					if (clock->paused) {
+						SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+					}
+					else {
+						SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+					}
+					SDL_Rect pause1 = { width - 16, 4, 12, 24 };
+					SDL_Rect pause2 = { width - 32, 4, 12, 24 };
+					SDL_RenderFillRect(renderer, &pause1);
+					SDL_RenderFillRect(renderer, &pause2);
 				}
 				if (e.key.keysym.sym == SDLK_PAGEDOWN) {
+					dirtyData = true;
 					addr += 0x100;
 				}
 				if (e.key.keysym.sym == SDLK_PAGEUP) {
+					dirtyData = true;
 					addr -= 0x100;
 				}
+				if (e.key.keysym.sym == SDLK_RETURN) {
+					SDL_StopTextInput();
+				}
+			}
+			/*else if (e.type == SDL_EventType::SDL_TEXTINPUT) {
+				text += e.text.text;
+			}*/
+			else if (e.type == SDL_EventType::SDL_TEXTEDITING) {
+				composition = e.edit.text;
 			}
 		}
 
 		if (clock->paused) {
-			SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-			SDL_RenderClear(renderer);
-			DrawDisasm(height * 144 / 160, 0, 40);
-			DrawMemory(height * 144 / 160 + 256, 154, addr);
-			DrawRegisters(height*144/160+256, 0);
-			DrawTileset(height * 144 / 160 + 256 + 2, 584);
-			DrawTilemap(height * 144 / 160 + 256 + 8*16 + 32, 584);
-			SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-			SDL_Rect pause1 = { width - 16, 4, 12, 24 };
-			SDL_Rect pause2 = { width - 32, 4, 12, 24 };
-			SDL_RenderFillRect(renderer, &pause1);
-			SDL_RenderFillRect(renderer, &pause2);
+			if (dirtyData) {
+				SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+				SDL_RenderClear(renderer);
+				DrawDisasm(height * 144 / 160, 0, 40);
+				DrawMemory(height * 144 / 160 + 256, 154, addr);
+				DrawRegisters(height * 144 / 160 + 256, 0);
+				DrawTileset(height * 144 / 160 + 256 + 2, 584);
+				DrawTilemap(height * 144 / 160 + 256 + 8 * 16 + 32, 584);
+				DrawScreen(0, 0);
+				dirtyData = false;
+			}
 		}
 		else {
-			SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-			SDL_Rect pause1 = { width - 16, 4, 12, 24 };
-			SDL_Rect pause2 = { width - 32, 4, 12, 24 };
-			SDL_RenderFillRect(renderer, &pause1);
-			SDL_RenderFillRect(renderer, &pause2);
-			dirtyTileset = true;
-			dirtyTilemap = true;
+			DrawScreen(0, 0);
+			dirtyData = true;
 		}
 
-		DrawScreen(0, 0);
+		SDL_Color color;
+		color.r = 255;
+		color.g = 255;
+		color.b = 255;
+		color.a = 255;
+
+		SDL_Rect rect = { width - 32, 4, 12, 24 };
+
 
 		auto t2 = std::chrono::steady_clock::now();
 
@@ -220,10 +251,8 @@ void Screen::DrawTileset(int x, int y)
 	SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
 	//SDL_RenderDrawRect(renderer, &rect);
 
-	if (dirtyTileset) {
-		ppu->getTileset(tileset);
-		dirtyTileset = false;
-	}
+	ppu->getTileset(tileset);
+		
 	for (int cx = 0; cx < 8 * 16; cx++) {
 		for (int cy = 0; cy < 8 * 24; cy++) {
 			SDL_SetRenderDrawColor(renderer, tileset[cy * 8 * 16 + cx].r, tileset[cy * 8 * 16 + cx].g, tileset[cy * 8 * 16 + cx].b, 255);
@@ -251,10 +280,8 @@ void Screen::DrawTilemap(int x, int y)
 	SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
 	//SDL_RenderDrawRect(renderer, &rect);
 
-	if (dirtyTilemap) {
-		ppu->getTilemap(tilemap);
-		dirtyTilemap = false;
-	}
+	ppu->getTilemap(tilemap);
+
 	for (int cx = 0; cx < 8 * 32; cx++) {
 		for (int cy = 0; cy < 8 * 32; cy++) {
 			SDL_SetRenderDrawColor(renderer, tilemap[cy * 8 * 32 + cx].r, tilemap[cy * 8 * 32 + cx].g, tilemap[cy * 8 * 32 + cx].b, 255);
@@ -275,6 +302,9 @@ void Screen::render_text(int x, int y, const char* text, TTF_Font* font, SDL_Rec
 {
 	SDL_Surface* surface = TTF_RenderText_Solid(font, text, *color);
 	SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+	if (!surface || !texture) {
+		return;
+	}
 	rect->x = x;
 	rect->y = y;
 	rect->w = surface->w;

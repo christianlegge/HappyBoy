@@ -28,8 +28,7 @@ private:
 	std::shared_ptr<CPU> cpu;
 	std::shared_ptr<Bus> bus;
 	std::shared_ptr<PPU> ppu;
-	bool dirtyTileset = true;
-	bool dirtyTilemap = true;
+	bool dirtyData = true;
 	int width;
 	int height;
 };
