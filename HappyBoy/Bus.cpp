@@ -35,6 +35,15 @@ uint8_t Bus::read(uint16_t addr)
 	else if (addr == 0xFF04) {
 		return cpu->counter >> 8;
 	}
+	else if (addr == 0xFF05) {
+		return cpu->TIMA;
+	}
+	else if (addr == 0xFF06) {
+		return cpu->TMA;
+	}
+	else if (addr == 0xFF07) {
+		return cpu->TAC.reg;
+	}
 	else if (addr == 0xFF0F) {
 		return cpu->IF.reg;
 	}
@@ -74,6 +83,15 @@ void Bus::write(uint16_t addr, uint8_t data)
 	}
 	else if (addr == 0xFF04) {
 		cpu->counter &= 0xFF;
+	}
+	else if (addr == 0xFF05) {
+		cpu->TIMA = data;
+	}
+	else if (addr == 0xFF06) {
+		cpu->TMA = data;
+	}
+	else if (addr == 0xFF07) {
+		cpu->TAC.reg = data;
 	}
 	else if (addr == 0xFF0F) {
 		cpu->IF.reg = data;

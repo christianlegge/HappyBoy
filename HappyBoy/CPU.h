@@ -50,6 +50,16 @@ public:
 	} IE;
 	bool stop = false;
 	uint16_t counter = 0x0000;
+	uint8_t TIMA;
+	uint8_t TMA;
+	union {
+		struct {
+			uint8_t clockselect : 2;
+			bool running : 1;
+			uint8_t unused : 5;
+		};
+		uint8_t reg;
+	} TAC;
 private:
 	union {
 		struct {

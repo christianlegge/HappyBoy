@@ -91,6 +91,37 @@ uint16_t CPU::tick() {
 
 	cyclesRemaining--;
 	counter++;
+
+	if (TAC.running) {
+		uint8_t bit;
+		switch (TAC.clockselect) {
+		case 0:
+			bit = 9;
+			break;
+		case 1:
+			bit = 3;
+			break;
+		case 2:
+			bit = 5;
+			break;
+		case 3:
+			bit = 7;
+			break;
+		}
+		bool tmp = counter & (1 << bit);
+		counter++;
+		if (tmp != (counter & (1 << bit))) {
+			TIMA++;
+		}
+		if (TIMA == 0) {
+			IF.timer = true;
+			TIMA = TMA;
+		}
+	}
+	else {
+		counter++;
+	}
+
 	return pc;
 }
 
