@@ -32,6 +32,9 @@ uint8_t Bus::read(uint16_t addr)
 			return cart[addr];
 		}
 	}
+	else if (addr == 0xFF04) {
+		return cpu->counter >> 8;
+	}
 	else if (addr == 0xFF0F) {
 		return cpu->IF.reg;
 	}
@@ -68,6 +71,9 @@ void Bus::write(uint16_t addr, uint8_t data)
 {
 	if (0x0000 <= addr && addr < 0x8000) {
 		return;
+	}
+	else if (addr == 0xFF04) {
+		cpu->counter &= 0xFF;
 	}
 	else if (addr == 0xFF0F) {
 		cpu->IF.reg = data;

@@ -90,6 +90,7 @@ uint16_t CPU::tick() {
 	}
 
 	cyclesRemaining--;
+	counter++;
 	return pc;
 }
 

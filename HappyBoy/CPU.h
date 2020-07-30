@@ -49,6 +49,7 @@ public:
 		uint8_t reg = 0x00;
 	} IE;
 	bool stop = false;
+	uint16_t counter = 0x0000;
 private:
 	union {
 		struct {
