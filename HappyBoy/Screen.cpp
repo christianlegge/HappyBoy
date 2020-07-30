@@ -43,6 +43,7 @@ void Screen::Start()
 	Sint32 cursor;
 	Sint32 selection_len;
 	bool typing = false;
+	bool lastPauseState = false;
 
 	while (!quit){
 		if (SDL_PollEvent(&e)) {
@@ -74,6 +75,7 @@ void Screen::Start()
 					clock->paused = !clock->paused;
 					if (clock->paused) {
 						SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+						dirtyData = true;
 					}
 					else {
 						SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
@@ -99,6 +101,11 @@ void Screen::Start()
 				}
 			}
 		}
+
+		if (clock->paused && !lastPauseState) {
+			dirtyData = true;
+		}
+		lastPauseState = clock->paused;
 
 		if (clock->paused) {
 			if (dirtyData) {
