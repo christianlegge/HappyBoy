@@ -56,10 +56,32 @@ CPU::CPU(std::shared_ptr<Bus> bus) : bus(bus)
 }
 
 uint16_t CPU::tick() {
-	currentInterrupt = 0x00FF;
-	if (shouldResetIme) {
-		ime = false;
-		shouldResetIme = false;
+
+	if (ime) {
+		uint16_t addr = 0;
+		if (IF.vblank && IE.vblank) {
+			addr = 0x0040;
+		}
+		else if (IF.lcdc && IE.lcdc) {
+			addr = 0x0048;
+		}
+		else if (IF.timer && IE.timer) {
+			addr = 0x0050;
+		}
+		else if (IF.serial && IE.serial) {
+			addr = 0x0058;
+		}
+		else if (IF.joypad && IE.joypad) {
+			addr = 0x0060;
+		}
+
+		if (addr) {
+			ime = false;
+			IF.reg = 0;
+			write(--sp, pc >> 8);
+			write(--sp, pc & 0b11111111);
+			pc = addr;
+		}
 	}
 
 	if (cyclesRemaining <= 0) {
@@ -150,39 +172,19 @@ void CPU::interrupt(uint16_t addr)
 {
 	if (addr == 0x0040) {
 		IF.vblank = true;
-		if (!(ime && IE.vblank) || addr > currentInterrupt) {
-			return;
-		}
 	}
 	else if (addr == 0x0048) {
 		IF.lcdc = true;
-		if (!(ime && IE.lcdc) || addr > currentInterrupt) {
-			return;
-		}
 	}
 	else if (addr == 0x0050) {
 		IF.timer = true;
-		if (!(ime && IE.timer) || addr > currentInterrupt) {
-			return;
-		}
 	}
 	else if (addr == 0x0058) {
 		IF.serial = true;
-		if (!(ime && IE.serial) || addr > currentInterrupt) {
-			return;
-		}
 	}
 	else if (addr == 0x0060) {
 		IF.joypad = true;
-		if (!(ime && IE.joypad) || addr > currentInterrupt) {
-			return;
-		}
 	}
-	currentInterrupt = addr;
-	shouldResetIme = true;
-	write(--sp, pc >> 8);
-	write(--sp, pc & 0b11111111);
-	pc = addr;
 }
 
 void CPU::reset()

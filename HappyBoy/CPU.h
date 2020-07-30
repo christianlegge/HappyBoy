@@ -75,8 +75,6 @@ private:
 	uint16_t pc = 0x0000;
 
 	bool ime = false;
-	bool shouldResetIme = false;
-	uint16_t currentInterrupt = 0x0000;
 	int cyclesRemaining = 0;
 
 	std::vector<Instruction> glossary;
