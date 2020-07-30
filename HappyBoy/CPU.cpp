@@ -275,7 +275,7 @@ void CPU::execute(Instruction ins)
 		{
 			flags.C = 0;
 		}
-		if (tmp != 0 && (h & 0b00001000) == 0)
+		if ((hl & 0x0FFF) + bc > 0x0FFF)
 		{
 			flags.H = 1;
 		}
@@ -367,7 +367,7 @@ void CPU::execute(Instruction ins)
 		{
 			flags.C = 0;
 		}
-		if (tmp != 0 && (h & 0b00001000) == 0)
+		if ((hl & 0x0FFF) + de > 0x0FFF)
 		{
 			flags.H = 1;
 		}
@@ -472,7 +472,7 @@ void CPU::execute(Instruction ins)
 		{
 			flags.C = 0;
 		}
-		if (tmp != 0 && (h & 0b00001000) == 0)
+		if ((hl & 0x0FFF) + hl > 0x0FFF)
 		{
 			flags.H = 1;
 		}
@@ -569,7 +569,7 @@ void CPU::execute(Instruction ins)
 		{
 			flags.C = 0;
 		}
-		if (tmp != 0 && (h & 0b00001000) == 0)
+		if ((hl & 0x0FFF) + sp > 0x0FFF)
 		{
 			flags.H = 1;
 		}
@@ -1292,9 +1292,7 @@ void CPU::execute(Instruction ins)
 	case 232:
 		flags.Z = 0;
 		flags.N = 0;
-		tmp = sp & 0b0000100000000000;
-		sp += ins.param8; 
-		if (tmp != 0 && (sp & 0b0000100000000000) == 0)
+		if ((sp & 0x0FFF) + ins.param8 > 0x0FFF)
 		{
 			flags.H = 1;
 		}
@@ -1302,6 +1300,7 @@ void CPU::execute(Instruction ins)
 		{
 			flags.H = 0;
 		}
+		sp += ins.param8; 
 		if (sp < ins.param8)
 		{
 			flags.C = 1;
@@ -1379,7 +1378,7 @@ void CPU::execute(Instruction ins)
 		h = res >> 8;
 		l = res & 0xFF;
 		flags.Z = 0;
-		flags.H = (init & 0x0800) && !(res & 0x0800);
+		flags.H = (init & 0x0FFF) + (int8_t)ins.param8 > 0x0FFF;
 		flags.N = 0;
 		flags.C = (init & 0x8000) && !(res & 0x8000);
 	}
