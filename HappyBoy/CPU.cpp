@@ -1691,6 +1691,7 @@ void CPU::cb(uint8_t opcode)
 		break;
 	case 6:
 		data = read((h << 8) + l);
+		break;
 	case 7:
 		data = a;
 		break;
@@ -1797,6 +1798,7 @@ void CPU::cb(uint8_t opcode)
 		break;
 	case 6:
 		write((h << 8) + l, data);
+		break;
 	case 7:
 		a = data;
 		break;
