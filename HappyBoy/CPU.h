@@ -7,9 +7,8 @@
 #include "Bus.h"
 
 typedef struct {
-	std::string name;
-	int bytes;
-	int cycles;
+	uint8_t bytes : 2;
+	uint8_t cycles : 5;
 	uint8_t opcode;
 	uint16_t addr;
 	uint8_t param8;
@@ -90,10 +89,13 @@ private:
 
 	std::vector<Instruction> glossary;
 	std::vector<Instruction> cb_glossary;
+	std::vector<std::string> names;
+	Instruction current_instruction;
+	Instruction debug_instruction;
 
 
-	Instruction fetch(bool setCycles = true);
-	void execute(Instruction ins);
+	void fetch(bool debug = false);
+	void execute(Instruction& ins);
 	uint8_t read(uint16_t addr);
 	void write(uint16_t addr, uint8_t data);
 
