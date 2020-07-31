@@ -223,6 +223,7 @@ void CPU::reset()
 {
 	stop = false;
 	pc = 0x0000;
+	write(0xFF50, 0);
 }
 
 Instruction CPU::fetch(bool setCycles) {
