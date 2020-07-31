@@ -1633,41 +1633,6 @@ void CPU::cp(int val)
 
 void CPU::cb(uint8_t opcode)
 {
-	std::string op;
-	if ((opcode & 0b11111000) == 0b00000000) {
-		op = "RLC";
-	}
-	else if ((opcode & 0b11111000) == 0b00001000) {
-		op = "RRC";
-	}
-	else if ((opcode & 0b11111000) == 0b00010000) {
-		op = "RL";
-	}
-	else if ((opcode & 0b11111000) == 0b00011000) {
-		op = "RR";
-	}
-	else if ((opcode & 0b11111000) == 0b00100000) {
-		op = "SLA";
-	}
-	else if ((opcode & 0b11111000) == 0b00101000) {
-		op = "SRA";
-	}
-	else if ((opcode & 0b11111000) == 0b00110000) {
-		op = "SWAP";
-	}
-	else if ((opcode & 0b11111000) == 0b00111000) {
-		op = "SRL";
-	}
-	else if ((opcode & 0b11000000) == 0b01000000) {
-		op = "BIT";
-	}
-	else if ((opcode & 0b11000000) == 0b10000000) {
-		op = "RES";
-	}
-	else if ((opcode & 0b11000000) == 0b11000000) {
-		op = "SET";
-	}
-
 	uint8_t bit = (opcode & 0b00111000) >> 3;
 
 	uint8_t data;
@@ -1698,7 +1663,7 @@ void CPU::cb(uint8_t opcode)
 		break;
 	}
 	int tmp;
-	if (op == "RLC") {
+	if ((opcode & 0b11111000) == 0b00000000) { // RLC
 		flags.N = 0;
 		flags.H = 0;
 		flags.C = data & 0b10000000;
@@ -1706,7 +1671,7 @@ void CPU::cb(uint8_t opcode)
 		data = data | flags.C;
 		flags.Z = data == 0 ? 0 : 1;
 	}
-	else if (op == "RRC") {
+	else if ((opcode & 0b11111000) == 0b00001000) { // RRC
 		flags.N = 0;
 		flags.H = 0;
 		flags.C = data & 0b00000001;
@@ -1714,7 +1679,7 @@ void CPU::cb(uint8_t opcode)
 		data = data | (flags.C << 7);
 		flags.Z = data == 0 ? 0 : 1;
 	}
-	else if (op == "RL") {
+	else if ((opcode & 0b11111000) == 0b00010000) { // RL
 		tmp = flags.C;
 		flags.N = 0;
 		flags.H = 0;
@@ -1723,7 +1688,7 @@ void CPU::cb(uint8_t opcode)
 		data = data | tmp;
 		flags.Z = data == 0 ? 0 : 1;
 	}
-	else if (op == "RR") {
+	else if ((opcode & 0b11111000) == 0b00011000) { // RR
 		tmp = flags.C;
 		flags.N = 0;
 		flags.H = 0;
@@ -1732,14 +1697,14 @@ void CPU::cb(uint8_t opcode)
 		data = data | (tmp << 7);
 		flags.Z = data == 0 ? 0 : 1;
 	}
-	else if (op == "SLA") {
+	else if ((opcode & 0b11111000) == 0b00100000) { // SLA
 		flags.N = 0;
 		flags.H = 0;
 		flags.C = data & 0b10000000;
 		data = data << 1;
 		flags.Z = data == 0 ? 0 : 1;
 	}
-	else if (op == "SRA") {
+	else if ((opcode & 0b11111000) == 0b00101000) { // SRA
 		tmp = data & 0b10000000;
 		flags.N = 0;
 		flags.H = 0;
@@ -1748,7 +1713,7 @@ void CPU::cb(uint8_t opcode)
 		data = data | tmp;
 		flags.Z = data == 0 ? 0 : 1;
 	}
-	else if (op == "SWAP") {
+	else if ((opcode & 0b11111000) == 0b00110000) { // SWAP
 		flags.N = 0;
 		flags.H = 0;
 		flags.C = 0;
@@ -1757,7 +1722,7 @@ void CPU::cb(uint8_t opcode)
 		data = data & (tmp << 4);
 		flags.Z = data == 0 ? 0 : 1;
 	}
-	else if (op == "SRL") {
+	else if ((opcode & 0b11111000) == 0b00111000) { // SRL
 
 		flags.N = 0;
 		flags.H = 0;
@@ -1765,16 +1730,16 @@ void CPU::cb(uint8_t opcode)
 		data = data >> 1;
 		flags.Z = data == 0 ? 0 : 1;
 	}
-	else if (op == "BIT") {
+	else if ((opcode & 0b11000000) == 0b01000000) { // BIT
 		flags.N = 0;
 		flags.H = 1;
 		flags.Z = data & (1 << bit);
 		flags.Z = 1 - flags.Z;
 	}
-	else if (op == "RES") {
+	else if ((opcode & 0b11000000) == 0b10000000) { // RES
 		data = data & (~(1 << bit));
 	}
-	else if (op == "SET") {
+	else if ((opcode & 0b11000000) == 0b11000000) { // SET
 		data = data | (1 << bit);
 	}
 
