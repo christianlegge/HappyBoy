@@ -6,10 +6,7 @@
 #include <algorithm>
 #include <iostream>
 
-Screen::Screen(std::shared_ptr<Clock> clock, std::shared_ptr<CPU> cpu, std::shared_ptr<Bus> bus, std::shared_ptr<PPU> ppu) : clock(clock), cpu(cpu), bus(bus), ppu(ppu) {
-	width = 1800;
-	height = 900;
-
+Screen::Screen(int width, int height, std::shared_ptr<Clock> clock, std::shared_ptr<CPU> cpu, std::shared_ptr<Bus> bus, std::shared_ptr<PPU> ppu) : width(width), height(height), clock(clock), cpu(cpu), bus(bus), ppu(ppu) {
 	std::thread screenThread(&Screen::Start, this);
 	screenThread.detach();
 }

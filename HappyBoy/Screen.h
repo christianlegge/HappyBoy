@@ -9,7 +9,7 @@
 class Screen
 {
 public:
-	Screen(std::shared_ptr<Clock> clock, std::shared_ptr<CPU> cpu, std::shared_ptr<Bus> bus, std::shared_ptr<PPU> ppu);
+	Screen(int width, int height, std::shared_ptr<Clock> clock, std::shared_ptr<CPU> cpu, std::shared_ptr<Bus> bus, std::shared_ptr<PPU> ppu);
 private:
 	void Start();
 	void DrawScreen();

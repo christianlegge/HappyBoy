@@ -1,15 +1,23 @@
 #include <memory>
 #include <iostream>
 #include <fstream>
+#include <chrono>
 #include "Screen.h"
 
 
 int main(int argc, char* argv[]) {
+	if (argc != 3) {
+		std::cout << "Usage: " << argv[0] << " <width> <height>" << std::endl;
+		return 0;
+	}
 	std::ifstream bootfile("dmg_boot.bin", std::ios_base::binary);
 	unsigned char* bootrom = new unsigned char[256];
 	bootfile.read((char*)bootrom, 256);
 
-	std::ifstream romfile("mealybug/m3_scy_change.gb", std::ios_base::binary);
+	//std::ifstream romfile("mooneye/acceptance/instr/daa.gb", std::ios_base::binary);
+	//std::ifstream romfile("drmario.gb", std::ios_base::binary);
+	std::ifstream romfile("blargg_cpu_instrs/07-jr,jp,call,ret,rst.gb", std::ios_base::binary);
+	//std::ifstream romfile("mealybug/m3_scx_high_5_bits.gb", std::ios_base::binary);
 	romfile.seekg(0, std::ios::end);
 	size_t romlength = romfile.tellg();
 	romfile.seekg(0, std::ios::beg);
@@ -26,7 +34,7 @@ int main(int argc, char* argv[]) {
 	ppu->cpu = cpu;
 	bus->cpu = cpu;
 	std::shared_ptr<Clock> clock = std::make_shared<Clock>(cpu, ppu, apu);
-	Screen s(clock, cpu, bus, ppu);
+	Screen s(atoi(argv[1]), atoi(argv[2]), clock, cpu, bus, ppu);
 
 	while (true) {
 		clock->tick();
