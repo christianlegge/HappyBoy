@@ -68,7 +68,11 @@ private:
 	int cycles = 0;
 	int screenx = -1;
 	color screen[160 * 144];
+#if 0
 	color index[4] = { { 255, 255, 255 }, { 170, 170, 170 } ,{ 85, 85, 85 } ,{ 0, 0, 0 } };
+#else
+	color index[4] = { { 155, 188, 18 }, { 139, 172, 15 } ,{ 48, 98, 48 } ,{ 15, 56, 15 } };
+#endif
 	uint8_t read(uint16_t addr);
 	bool screenFrameReady = false;
 };
