@@ -38,6 +38,9 @@ uint8_t Bus::read(uint16_t addr)
 	else if (0xFEA0 <= addr && addr < 0xFF00) {
 		return 0xFF;
 	}
+	else if (addr == 0xFF00) {
+		return 0xFF; // Joypad input, disabled for now
+	}
 	else if (addr == 0xFF04) {
 		return cpu->counter >> 8;
 	}
@@ -91,6 +94,9 @@ void Bus::write(uint16_t addr, uint8_t data)
 		return;
 	}
 	else if (0xFEA0 <= addr && addr < 0xFF00) {
+		return;
+	}
+	else if (addr == 0xFF00) {
 		return;
 	}
 	else if (addr == 0xFF04) {
