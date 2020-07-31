@@ -9,19 +9,18 @@
 Screen::Screen(std::shared_ptr<Clock> clock, std::shared_ptr<CPU> cpu, std::shared_ptr<Bus> bus, std::shared_ptr<PPU> ppu) : clock(clock), cpu(cpu), bus(bus), ppu(ppu) {
 	width = 1800;
 	height = 900;
-	//Start();
+
 	std::thread screenThread(&Screen::Start, this);
 	screenThread.detach();
 }
 
 void Screen::Start()
 {
-	float scale = 1;
-
 	SDL_Init(SDL_INIT_VIDEO);
-	window = SDL_CreateWindow("HappyBoy", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width*scale, height*scale, 0);
+	window = SDL_CreateWindow("HappyBoy", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, 0);
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-	SDL_RenderSetScale(renderer, scale, scale);
+	texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STREAMING, 160, 144);
+	screen_rect = { 0, 0, height * 160 / 144, height };
 	long long frames = 0;
 
 	TTF_Init();
@@ -44,6 +43,8 @@ void Screen::Start()
 	Sint32 selection_len;
 	bool typing = false;
 	bool lastPauseState = false;
+
+	screen_pixels = (uint8_t*)ppu->getScreen();
 
 	while (!quit){
 		if (SDL_PollEvent(&e)) {
@@ -115,12 +116,12 @@ void Screen::Start()
 				SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 				SDL_RenderClear(renderer);
 				render_text(800, 800, ("Breakpoint: " + text).c_str(), font, &white);
-				DrawDisasm(height * 144 / 160, 0, 40);
-				DrawMemory(height * 144 / 160 + 256, 154, addr);
-				DrawRegisters(height * 144 / 160 + 256, 0);
-				DrawTileset(height * 144 / 160 + 256 + 2, 584);
-				DrawTilemap(height * 144 / 160 + 256 + 8 * 16 + 32, 584);
-				DrawScreen(0, 0);
+				DrawDisasm(height * 160 / 144, 0, 40);
+				DrawMemory(height * 160 / 144 + 256, 154, addr);
+				DrawRegisters(height * 160 / 144 + 256, 0);
+				DrawTileset(height * 160 / 144 + 256 + 2, 584);
+				DrawTilemap(height * 160 / 144 + 256 + 8 * 16 + 32, 584);
+				DrawScreen();
 				SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 				SDL_Rect pause1 = { width - 16, 4, 12, 24 };
 				SDL_Rect pause2 = { width - 32, 4, 12, 24 };
@@ -131,7 +132,7 @@ void Screen::Start()
 		}
 		else if (ppu->getScreenFrameReady()) {
 			frames++;
-			DrawScreen(0, 0);
+			DrawScreen();
 			dirtyData = true;
 			auto t2 = std::chrono::steady_clock::now();
 			if (!(frames % 10)) {
@@ -140,55 +141,21 @@ void Screen::Start()
 			t1 = t2;
 		}
 
-		SDL_Color color;
-		color.r = 255;
-		color.g = 255;
-		color.b = 255;
-		color.a = 255;
-
-		SDL_Rect rect = { width - 32, 4, 12, 24 };
-
-
-
-
 		SDL_RenderPresent(renderer);
 	}
 
 	delete tileset;
 
+	SDL_DestroyTexture(texture);
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 	SDL_Quit();
 }
 
-void Screen::DrawScreen(int x, int y)
+void Screen::DrawScreen()
 {
-	SDL_Rect rect;
-	rect.x = x;
-	rect.y = y;
-	rect.w = height * 144 / 160;
-	rect.h = height;
-	int pixelsize = std::min(rect.w / 160, rect.h / 144);
-
-	SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-	//SDL_RenderDrawRect(renderer, &rect);
-
-	color* screen = ppu->getScreen();
-	for (int cx = 0; cx < 160; cx++) {
-		for (int cy = 0; cy < 144; cy++) {
-			SDL_SetRenderDrawColor(renderer, screen[cy*160 + cx].r, screen[cy * 160 + cx].g, screen[cy * 160 + cx].b, 255);
-			SDL_Rect r = { x + cx*pixelsize, y + cy*pixelsize, pixelsize, pixelsize};
-			SDL_RenderFillRect(renderer, &r);
-		}
-	}
-
-	SDL_Color color;
-	color.r = 255;
-	color.g = 255;
-	color.b = 255;
-	color.a = 255;
-
-	//render_text(x, y, "Screen", font, &rect, &color);
+	SDL_UpdateTexture(texture, NULL, screen_pixels, 160*3); 
+	SDL_RenderCopy(renderer, texture, NULL, &screen_rect);
 }
 
 void Screen::DrawDisasm(int x, int y, int lines)
