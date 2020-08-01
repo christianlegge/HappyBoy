@@ -1711,7 +1711,7 @@ void CPU::cb(uint8_t opcode)
 		flags.C = data & 0b10000000;
 		data = data << 1;
 		data = data | flags.C;
-		flags.Z = data == 0 ? 0 : 1;
+		flags.Z = data == 0;
 	}
 	else if ((opcode & 0b11111000) == 0b00001000) { // RRC
 		flags.N = 0;
@@ -1719,7 +1719,7 @@ void CPU::cb(uint8_t opcode)
 		flags.C = data & 0b00000001;
 		data = data >> 1;
 		data = data | (flags.C << 7);
-		flags.Z = data == 0 ? 0 : 1;
+		flags.Z = data == 0;
 	}
 	else if ((opcode & 0b11111000) == 0b00010000) { // RL
 		tmp = flags.C;
@@ -1728,7 +1728,7 @@ void CPU::cb(uint8_t opcode)
 		flags.C = data & 0b10000000;
 		data = data << 1;
 		data = data | tmp;
-		flags.Z = data == 0 ? 0 : 1;
+		flags.Z = data == 0;
 	}
 	else if ((opcode & 0b11111000) == 0b00011000) { // RR
 		tmp = flags.C;
@@ -1737,14 +1737,14 @@ void CPU::cb(uint8_t opcode)
 		flags.C = data & 0b00000001;
 		data = data >> 1;
 		data = data | (tmp << 7);
-		flags.Z = data == 0 ? 0 : 1;
+		flags.Z = data == 0;
 	}
 	else if ((opcode & 0b11111000) == 0b00100000) { // SLA
 		flags.N = 0;
 		flags.H = 0;
 		flags.C = data & 0b10000000;
 		data = data << 1;
-		flags.Z = data == 0 ? 0 : 1;
+		flags.Z = data == 0;
 	}
 	else if ((opcode & 0b11111000) == 0b00101000) { // SRA
 		tmp = data & 0b10000000;
@@ -1753,7 +1753,7 @@ void CPU::cb(uint8_t opcode)
 		flags.C = data & 0b00000001;
 		data = data >> 1;
 		data = data | tmp;
-		flags.Z = data == 0 ? 0 : 1;
+		flags.Z = data == 0;
 	}
 	else if ((opcode & 0b11111000) == 0b00110000) { // SWAP
 		flags.N = 0;
@@ -1762,7 +1762,7 @@ void CPU::cb(uint8_t opcode)
 		tmp = data & 0b00001111;
 		data = data >> 4;
 		data = data & (tmp << 4);
-		flags.Z = data == 0 ? 0 : 1;
+		flags.Z = data == 0;
 	}
 	else if ((opcode & 0b11111000) == 0b00111000) { // SRL
 
@@ -1770,7 +1770,7 @@ void CPU::cb(uint8_t opcode)
 		flags.H = 0;
 		flags.C = data & 0b00000001;
 		data = data >> 1;
-		flags.Z = data == 0 ? 0 : 1;
+		flags.Z = data == 0;
 	}
 	else if ((opcode & 0b11000000) == 0b01000000) { // BIT
 		flags.N = 0;
