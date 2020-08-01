@@ -1068,7 +1068,7 @@ void CPU::execute(Instruction& ins)
 		flags.C = 0;
 		break;
 	case 174:
-		a = a ^ read((h << 8) + l);
+		a = a ^ read((h << 8) | l);
 		flags.Z = a == 0 ? 1 : 0;
 		flags.N = 0;
 		flags.H = 0;
@@ -1416,7 +1416,7 @@ void CPU::execute(Instruction& ins)
 		pc = 0x0028;
 		break;
 	case 240:
-		a = read(0xFF00 + ins.param8);
+		a = read(0xFF00 | ins.param8);
 		break;
 	case 241:
 		flags.reg = read(sp++);
@@ -1424,7 +1424,7 @@ void CPU::execute(Instruction& ins)
 		a = read(sp++);
 		break;
 	case 242:
-		a = read(0xFF00 + c);
+		a = read(0xFF00 | c);
 		break;
 	case 243:
 		ime = false;
