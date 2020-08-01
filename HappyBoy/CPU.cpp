@@ -283,7 +283,7 @@ void CPU::fetch(bool debug) {
 			i->param8 = read(pc++);
 		}
 		else if (i->bytes == 3) {
-			i->param16 = read(pc++) + (read(pc++) << 8);
+			i->param16 = read(pc++) | (read(pc++) << 8);
 		}
 	}
 	i->opcode = opcode;
@@ -394,7 +394,7 @@ void CPU::execute(Instruction& ins)
 		break;
 	case 17:
 		e = ins.param16 & 0xFF;
-		d = (ins.param16 >> 8) & 0xFF;
+		d = ins.param16 >> 8;
 		break;
 	case 18:
 		write((d << 8) + e, a);
@@ -496,7 +496,7 @@ void CPU::execute(Instruction& ins)
 		break;
 	case 33:
 		l = ins.param16 & 0xFF;
-		h = (ins.param16 >> 8) & 0xFF;
+		h = ins.param16 >> 8;
 		break;
 	case 34:
 		write((h << 8) + l, a);
