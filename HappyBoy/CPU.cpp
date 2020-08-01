@@ -1761,7 +1761,7 @@ void CPU::cb(uint8_t opcode)
 		flags.C = 0;
 		tmp = data & 0b00001111;
 		data = data >> 4;
-		data = data & (tmp << 4);
+		data = data | (tmp << 4);
 		flags.Z = data == 0;
 	}
 	else if ((opcode & 0b11111000) == 0b00111000) { // SRL
