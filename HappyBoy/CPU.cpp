@@ -4,18 +4,139 @@
 
 #include "CPU.h"
 
-uint8_t CPU::read(uint16_t addr)
+template<AddressingMode mode>
+uint8_t& CPU::getOperand()
+{
+	switch (mode) {
+	case AddressingMode::RegisterA:
+		return AF.A;
+		break;
+	case AddressingMode::RegisterB:
+		return BC.B;
+		break;
+	case AddressingMode::RegisterC:
+		return BC.C;
+		break;
+	case AddressingMode::RegisterD:
+		return DE.D;
+		break;
+	case AddressingMode::RegisterE:
+		return DE.E;
+		break;
+	case AddressingMode::RegisterF:
+		return AF.F.reg;
+		break;
+	case AddressingMode::RegisterH:
+		return HL.H;
+		break;
+	case AddressingMode::RegisterL:
+		return HL.L;
+		break;
+	default:
+		throw std::logic_error{ "Not implemented" };
+	}
+}
+
+template<WritebackMode mode>
+void CPU::writeValue(uint8_t value)
+{
+	switch (mode) {
+	case WritebackMode::RegisterA:
+		AF.A = value;
+		break;
+	case WritebackMode::RegisterB:
+		BC.B = value;
+		break;
+	case WritebackMode::RegisterC:
+		BC.C = value;
+		break;
+	case WritebackMode::RegisterD:
+		DE.D = value;
+		break;
+	case WritebackMode::RegisterE:
+		DE.E = value;
+		break;
+	case WritebackMode::RegisterF:
+		AF.F.reg = value & 0xF0;
+		break;
+	case WritebackMode::RegisterH:
+		HL.H = value;
+		break;
+	case WritebackMode::RegisterL:
+		HL.L = value;
+		break;
+	default:
+		throw std::logic_error{ "Not implemented" };
+	}
+}
+
+void CPU::NOP() {
+	return;
+}
+
+template <WritebackMode writeMode, AddressingMode readMode>
+void CPU::INC()
+{
+	uint8_t op = getOperand<readMode>();
+	op++;
+	AF.F.N = 0;
+	if (op == 0)
+	{
+		AF.F.Z = 1;
+	}
+	else
+	{
+		AF.F.Z = 0;
+	}
+	if ((op & 0b00001111) == 0)
+	{
+		AF.F.H = 1;
+	}
+	else
+	{
+		AF.F.H = 0;
+	}
+}
+
+template <WritebackMode writeMode, AddressingMode readMode>
+void CPU::LD() {
+	writeValue<writeMode>(getOperand<readMode>());
+}
+
+void CPU::HALT() {
+	throw std::logic_error{ "Not implemented" };
+}
+
+uint8_t CPU::readBus(uint16_t addr)
 {
 	return bus->read(addr);
 }
 
-void CPU::write(uint16_t addr, uint8_t data)
+void CPU::writeBus(uint16_t addr, uint8_t data)
 {
 	bus->write(addr, data);
 }
 
 CPU::CPU(std::shared_ptr<Bus> bus) : bus(bus)
 {
+	opcode_funcs = {
+ /*0x*/	&CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::INC<WritebackMode::RegisterA, AddressingMode::RegisterBC>, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP,
+		&CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP,
+		&CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP,
+		&CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP,
+		&CPU::LD<WritebackMode::RegisterB, AddressingMode::RegisterB>, &CPU::LD<WritebackMode::RegisterB, AddressingMode::RegisterC>, &CPU::LD<WritebackMode::RegisterB, AddressingMode::RegisterD>, &CPU::LD<WritebackMode::RegisterB, AddressingMode::RegisterE>, &CPU::LD<WritebackMode::RegisterB, AddressingMode::RegisterH>, &CPU::LD<WritebackMode::RegisterB, AddressingMode::RegisterL>, &CPU::LD<WritebackMode::RegisterB, AddressingMode::AddressHL>, &CPU::LD<WritebackMode::RegisterB, AddressingMode::RegisterA>, &CPU::LD<WritebackMode::RegisterC, AddressingMode::RegisterB>, &CPU::LD<WritebackMode::RegisterC, AddressingMode::RegisterC>, &CPU::LD<WritebackMode::RegisterC, AddressingMode::RegisterD>, &CPU::LD<WritebackMode::RegisterC, AddressingMode::RegisterE>, &CPU::LD<WritebackMode::RegisterC, AddressingMode::RegisterH>, &CPU::LD<WritebackMode::RegisterC, AddressingMode::RegisterL>, &CPU::LD<WritebackMode::RegisterC, AddressingMode::AddressHL>, &CPU::LD<WritebackMode::RegisterC, AddressingMode::RegisterA>,
+		&CPU::LD<WritebackMode::RegisterD, AddressingMode::RegisterB>, &CPU::LD<WritebackMode::RegisterD, AddressingMode::RegisterC>, &CPU::LD<WritebackMode::RegisterD, AddressingMode::RegisterD>, &CPU::LD<WritebackMode::RegisterD, AddressingMode::RegisterE>, &CPU::LD<WritebackMode::RegisterD, AddressingMode::RegisterH>, &CPU::LD<WritebackMode::RegisterD, AddressingMode::RegisterL>, &CPU::LD<WritebackMode::RegisterD, AddressingMode::AddressHL>, &CPU::LD<WritebackMode::RegisterD, AddressingMode::RegisterA>, &CPU::LD<WritebackMode::RegisterE, AddressingMode::RegisterB>, &CPU::LD<WritebackMode::RegisterE, AddressingMode::RegisterC>, &CPU::LD<WritebackMode::RegisterE, AddressingMode::RegisterD>, &CPU::LD<WritebackMode::RegisterE, AddressingMode::RegisterE>, &CPU::LD<WritebackMode::RegisterE, AddressingMode::RegisterH>, &CPU::LD<WritebackMode::RegisterE, AddressingMode::RegisterL>, &CPU::LD<WritebackMode::RegisterE, AddressingMode::AddressHL>, &CPU::LD<WritebackMode::RegisterE, AddressingMode::RegisterA>,
+		&CPU::LD<WritebackMode::RegisterH, AddressingMode::RegisterB>, &CPU::LD<WritebackMode::RegisterH, AddressingMode::RegisterC>, &CPU::LD<WritebackMode::RegisterH, AddressingMode::RegisterD>, &CPU::LD<WritebackMode::RegisterH, AddressingMode::RegisterE>, &CPU::LD<WritebackMode::RegisterH, AddressingMode::RegisterH>, &CPU::LD<WritebackMode::RegisterH, AddressingMode::RegisterL>, &CPU::LD<WritebackMode::RegisterH, AddressingMode::AddressHL>, &CPU::LD<WritebackMode::RegisterH, AddressingMode::RegisterA>, &CPU::LD<WritebackMode::RegisterL, AddressingMode::RegisterB>, &CPU::LD<WritebackMode::RegisterL, AddressingMode::RegisterC>, &CPU::LD<WritebackMode::RegisterL, AddressingMode::RegisterD>, &CPU::LD<WritebackMode::RegisterL, AddressingMode::RegisterE>, &CPU::LD<WritebackMode::RegisterL, AddressingMode::RegisterH>, &CPU::LD<WritebackMode::RegisterL, AddressingMode::RegisterL>, &CPU::LD<WritebackMode::RegisterL, AddressingMode::AddressHL>, &CPU::LD<WritebackMode::RegisterL, AddressingMode::RegisterA>,
+		&CPU::LD<WritebackMode::AddressHL, AddressingMode::RegisterB>, &CPU::LD<WritebackMode::AddressHL, AddressingMode::RegisterC>, &CPU::LD<WritebackMode::AddressHL, AddressingMode::RegisterD>, &CPU::LD<WritebackMode::AddressHL, AddressingMode::RegisterE>, &CPU::LD<WritebackMode::AddressHL, AddressingMode::RegisterH>, &CPU::LD<WritebackMode::AddressHL, AddressingMode::RegisterL>, &CPU::HALT, &CPU::LD<WritebackMode::AddressHL, AddressingMode::RegisterA>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterB>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterC>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterD>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterE>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterH>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterL>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::AddressHL>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterA>,
+		&CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP,
+		&CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP,
+		&CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP,
+		&CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP,
+		&CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP,
+		&CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP,
+		&CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP,
+	};
+
 	glossary = {
 		{ 1, 4 }, { 3, 12 }, { 1, 8 }, { 1, 8 }, { 1, 4 }, { 1, 4 }, { 2, 8 }, { 1, 4 }, { 3, 20 }, { 1, 8 }, { 1, 8 }, { 1, 8 }, { 1, 4 }, { 1, 4 }, { 2, 8 }, { 1, 4 },
 		{ 2, 4 }, { 3, 12 }, { 1, 8 }, { 1, 8 }, { 1, 4 }, { 1, 4 }, { 2, 8 }, { 1, 4 }, { 2, 12 }, { 1, 8 }, { 1, 8 }, { 1, 8 }, { 1, 4 }, { 1, 4 }, { 2, 8 }, { 1, 4 },
@@ -113,9 +234,9 @@ uint16_t CPU::tick() {
 		if (addr) {
 			ime = false;
 			IF.reg = 0;
-			write(--sp, pc >> 8);
-			write(--sp, pc & 0b11111111);
-			pc = addr;
+			writeBus(--SP, PC >> 8);
+			writeBus(--SP, PC & 0b11111111);
+			PC = addr;
 		}
 	}
 
@@ -157,13 +278,13 @@ uint16_t CPU::tick() {
 		counter++;
 	}
 
-	return pc;
+	return PC;
 }
 
 std::vector<std::string> CPU::getDisassembly(int lines)
 {
 	std::vector<std::string> disasm;
-	uint16_t pc_tmp = pc;
+	uint16_t pc_tmp = PC;
 	int cycles_tmp = cyclesRemaining;
 	for (int i = 0; i < lines; i++) {
 		fetch(true);
@@ -180,7 +301,7 @@ std::vector<std::string> CPU::getDisassembly(int lines)
 		}
 		if (r8pos != std::string::npos) {
 			std::stringstream s;
-			s << "$" << std::setfill('0') << std::setw(4) << std::hex << (int8_t)debug_instruction.param8 + pc;
+			s << "$" << std::setfill('0') << std::setw(4) << std::hex << (int8_t)debug_instruction.param8 + PC;
 			name.replace(r8pos, 2, s.str());
 		}
 		if (a8pos != std::string::npos) {
@@ -203,7 +324,7 @@ std::vector<std::string> CPU::getDisassembly(int lines)
 		s << "$" << std::setfill('0') << std::setw(4) << std::hex << debug_instruction.addr << ": " << name;
 		disasm.push_back(s.str());
 	}
-	pc = pc_tmp;
+	PC = pc_tmp;
 	cyclesRemaining = cycles_tmp;
 	return disasm;
 }
@@ -222,11 +343,11 @@ std::vector<std::string> CPU::getRegisters()
 {
 	std::vector<std::string> registers;
 	std::stringstream s;
-	registers.push_back(registerString(b, "b") + registerString(c, "c"));
-	registers.push_back(registerString(d, "d") + registerString(e, "e"));
-	registers.push_back(registerString(h, "h") + registerString(l, "l"));
-	registers.push_back(registerString(a, "a") + registerString(flags.reg, "f"));
-	s << "sp: $" << std::setfill('0') << std::setw(4) << std::hex << sp << "        pc: $" << std::setfill('0') << std::setw(4) << std::hex << pc;
+	registers.push_back(registerString(BC.B, "BC.B") + registerString(BC.C, "BC.C"));
+	registers.push_back(registerString(DE.D, "DE.D") + registerString(DE.E, "DE.E"));
+	registers.push_back(registerString(HL.H, "HL.H") + registerString(HL.L, "HL.L"));
+	registers.push_back(registerString(AF.A, "AF.A") + registerString(AF.F.reg, "f"));
+	s << "SP: $" << std::setfill('0') << std::setw(4) << std::hex << SP << "        PC: $" << std::setfill('0') << std::setw(4) << std::hex << PC;
 	registers.push_back(s.str());
 	return registers;
 }
@@ -258,13 +379,13 @@ void CPU::interrupt(uint16_t addr)
 void CPU::reset()
 {
 	stop = false;
-	pc = 0x0000;
-	write(0xFF50, 0);
+	PC = 0x0000;
+	writeBus(0xFF50, 0);
 }
 
 void CPU::fetch(bool debug) {
-	uint16_t addr = pc;
-	uint8_t opcode = read(pc++);
+	uint16_t addr = PC;
+	uint8_t opcode = readBus(PC++);
 	Instruction* i;
 	if (debug) {
 		i = &debug_instruction;
@@ -274,16 +395,16 @@ void CPU::fetch(bool debug) {
 	}
 	*i = glossary[opcode];
 	if (opcode == 0xCB) {
-		uint8_t cb_opcode = read(pc++);
+		uint8_t cb_opcode = readBus(PC++);
 		*i = cb_glossary[cb_opcode];
 		i->param8 = cb_opcode;
 	}
 	else {
 		if (i->bytes == 2) {
-			i->param8 = read(pc++);
+			i->param8 = readBus(PC++);
 		}
 		else if (i->bytes == 3) {
-			i->param16 = read(pc++) | (read(pc++) << 8);
+			i->param16 = readBus(PC++) | (readBus(PC++) << 8);
 		}
 	}
 	i->opcode = opcode;
@@ -301,925 +422,925 @@ void CPU::execute(Instruction& ins)
 	case 0:
 		break;
 	case 1:
-		c = ins.param16 & 0xFF;
-		b = ins.param16 >> 8;
+		BC.C = ins.param16 & 0xFF;
+		BC.B = ins.param16 >> 8;
 		break;
 	case 2:
-		write((b << 8) + c, a);
+		writeBus((BC.B << 8) + BC.C, AF.A);
 		break;
 	case 3:
-		c++;
-		if (c == 0)
+		BC.C++;
+		if (BC.C == 0)
 		{
-			b++;
+			BC.B++;
 		}
 		break;
 	case 4:
-		inc(&b);
+		////inc\(&BC.B);
 		break;
 	case 5:
-		dec(&b);
+		dec(&BC.B);
 		break;
 	case 6:
-		b = ins.param8;
+		BC.B = ins.param8;
 		break;
 	case 7:
-		flags.Z = 0;
-		flags.N = 0;
-		flags.H = 0;
-		flags.C = a & 0b10000000;
-		a = a << 1;
-		a = a | flags.C;
+		AF.F.Z = 0;
+		AF.F.N = 0;
+		AF.F.H = 0;
+		AF.F.C = AF.A & 0b10000000;
+		AF.A = AF.A << 1;
+		AF.A = AF.A | AF.F.C;
 		break;
 	case 8:
-		write(ins.param16, (sp >> 8));
-		write(ins.param16 + 1, sp);
+		writeBus(ins.param16, (SP >> 8));
+		writeBus(ins.param16 + 1, SP);
 		break;
 	case 9:
 	{
-		tmp = h & 0b00001000;
-		flags.N = 0;
-		uint16_t hl = (h << 8) | l;
-		uint16_t bc = (b << 8) | c;
+		tmp = HL.H & 0b00001000;
+		AF.F.N = 0;
+		uint16_t hl = (HL.H << 8) | HL.L;
+		uint16_t bc = (BC.B << 8) | BC.C;
 		uint16_t res = hl + bc;
-		h = (res & 0xFF00) >> 8;
-		l = res & 0xFF;
+		HL.H = (res & 0xFF00) >> 8;
+		HL.L = res & 0xFF;
 		if (hl + bc > 0xFFFF)
 		{
-			flags.C = 1;
+			AF.F.C = 1;
 		}
 		else
 		{
-			flags.C = 0;
+			AF.F.C = 0;
 		}
 		if ((hl & 0x0FFF) + bc > 0x0FFF)
 		{
-			flags.H = 1;
+			AF.F.H = 1;
 		}
 		else
 		{
-			flags.H = 0;
+			AF.F.H = 0;
 		}
 	}
 	break;
 	case 10:
-		a = read((b << 8) + c);
+		AF.A = readBus((BC.B << 8) + BC.C);
 		break;
 	case 11:
-		c--;
-		if (c == 255)
+		BC.C--;
+		if (BC.C == 255)
 		{
-			b--;
+			BC.B--;
 		}
 		break;
 	case 12:
-		inc(&c);
+		//inc\(&BC.C);
 		break;
 	case 13:
-		dec(&c);
+		dec(&BC.C);
 		break;
 	case 14:
-		c = ins.param8;
+		BC.C = ins.param8;
 		break;
 	case 15:
-		flags.Z = 0;
-		flags.N = 0;
-		flags.H = 0;
-		flags.C = a & 0b00000001;
-		a = a >> 1;
-		a = a | (flags.C << 7);
+		AF.F.Z = 0;
+		AF.F.N = 0;
+		AF.F.H = 0;
+		AF.F.C = AF.A & 0b00000001;
+		AF.A = AF.A >> 1;
+		AF.A = AF.A | (AF.F.C << 7);
 		break;
 	case 16:
 		stop = true;
 		break;
 	case 17:
-		e = ins.param16 & 0xFF;
-		d = ins.param16 >> 8;
+		DE.E = ins.param16 & 0xFF;
+		DE.D = ins.param16 >> 8;
 		break;
 	case 18:
-		write((d << 8) + e, a);
+		writeBus((DE.D << 8) + DE.E, AF.A);
 		break;
 	case 19:
-		e++;
-		if (e == 0)
+		DE.E++;
+		if (DE.E == 0)
 		{
-			d++;
+			DE.D++;
 		}
 		break;
 	case 20:
-		inc(&d);
+		//inc\(&DE.D);
 		break;
 	case 21:
-		dec(&d);
+		dec(&DE.D);
 		break;
 	case 22:
-		d = ins.param8;
+		DE.D = ins.param8;
 		break;
 	case 23:
-		tmp = flags.C;
-		flags.Z = 0;
-		flags.N = 0;
-		flags.H = 0;
-		flags.C = a & 0b10000000;
-		a = a << 1;
-		a = a | tmp;
+		tmp = AF.F.C;
+		AF.F.Z = 0;
+		AF.F.N = 0;
+		AF.F.H = 0;
+		AF.F.C = AF.A & 0b10000000;
+		AF.A = AF.A << 1;
+		AF.A = AF.A | tmp;
 		break;
 	case 24:
-		pc += (int8_t)ins.param8;
+		PC += (int8_t)ins.param8;
 		break;
 	case 25:
 	{
-		tmp = h & 0b00001000;
-		flags.N = 0;
-		uint16_t hl = (h << 8) | l;
-		uint16_t de = (b << 8) | c;
+		tmp = HL.H & 0b00001000;
+		AF.F.N = 0;
+		uint16_t hl = (HL.H << 8) | HL.L;
+		uint16_t de = (BC.B << 8) | BC.C;
 		uint16_t res = hl + de;
-		h = (res & 0xFF00) >> 8;
-		l = res & 0xFF;
+		HL.H = (res & 0xFF00) >> 8;
+		HL.L = res & 0xFF;
 		if (hl + de > 0xFFFF)
 		{
-			flags.C = 1;
+			AF.F.C = 1;
 		}
 		else
 		{
-			flags.C = 0;
+			AF.F.C = 0;
 		}
 		if ((hl & 0x0FFF) + de > 0x0FFF)
 		{
-			flags.H = 1;
+			AF.F.H = 1;
 		}
 		else
 		{
-			flags.H = 0;
+			AF.F.H = 0;
 		}
 	}
 	break;
 	case 26:
-		a = read((d << 8) + e);
+		AF.A = readBus((DE.D << 8) + DE.E);
 		break;
 	case 27:
-		e--;
-		if (e == -1)
+		DE.E--;
+		if (DE.E == -1)
 		{
-			e = 255;
-			d--;
-			if (d == -1)
+			DE.E = 255;
+			DE.D--;
+			if (DE.D == -1)
 			{
-				d = 255;
+				DE.D = 255;
 			}
 		}
 		break;
 	case 28:
-		inc(&e);
+		//inc\(&DE.E);
 		break;
 	case 29:
-		dec(&e);
+		dec(&DE.E);
 		break;
 	case 30:
-		e = ins.param8;
+		DE.E = ins.param8;
 		break;
 	case 31:
-		tmp = flags.C;
-		flags.Z = 0;
-		flags.N = 0;
-		flags.H = 0;
-		flags.C = a & 0b00000001;
-		a = a >> 1;
-		a = a | (tmp << 7);
+		tmp = AF.F.C;
+		AF.F.Z = 0;
+		AF.F.N = 0;
+		AF.F.H = 0;
+		AF.F.C = AF.A & 0b00000001;
+		AF.A = AF.A >> 1;
+		AF.A = AF.A | (tmp << 7);
 		break;
 	case 32:
-		if (flags.Z == 0)
+		if (AF.F.Z == 0)
 		{
-			pc += (int8_t)ins.param8;
+			PC += (int8_t)ins.param8;
 			ins.cycles += 4;
 		}
 		break;
 	case 33:
-		l = ins.param16 & 0xFF;
-		h = ins.param16 >> 8;
+		HL.L = ins.param16 & 0xFF;
+		HL.H = ins.param16 >> 8;
 		break;
 	case 34:
-		write((h << 8) + l, a);
-		l++;
-		if (l == 0)
+		writeBus((HL.H << 8) + HL.L, AF.A);
+		HL.L++;
+		if (HL.L == 0)
 		{
-			h++;
+			HL.H++;
 		}
 		break;
 	case 35:
-		l++;
-		if (l == 0)
+		HL.L++;
+		if (HL.L == 0)
 		{
-			h++;
+			HL.H++;
 		}
 		break;
 	case 36:
-		inc(&h);
+		//inc\(&HL.H);
 		break;
 	case 37:
-		dec(&h);
+		dec(&HL.H);
 		break;
 	case 38:
-		h = ins.param8;
+		HL.H = ins.param8;
 		break;
 	case 39:
-		a += daa();
-		flags.Z = (a == 0);
+		AF.A += daa();
+		AF.F.Z = (AF.A == 0);
 		break;
 	case 40:
-		if (flags.Z == 1)
+		if (AF.F.Z == 1)
 		{
-			pc += (int8_t)ins.param8;
+			PC += (int8_t)ins.param8;
 			ins.cycles += 4;
 		}
 		break;
 	case 41:
 	{
-		tmp = h & 0b00001000;
-		flags.N = 0;
-		uint16_t hl = (h << 8) | l;
+		tmp = HL.H & 0b00001000;
+		AF.F.N = 0;
+		uint16_t hl = (HL.H << 8) | HL.L;
 		uint16_t res = hl + hl;
-		h = (res & 0xFF00) >> 8;
-		l = res & 0xFF;
+		HL.H = (res & 0xFF00) >> 8;
+		HL.L = res & 0xFF;
 		if (hl + hl > 0xFFFF)
 		{
-			flags.C = 1;
+			AF.F.C = 1;
 		}
 		else
 		{
-			flags.C = 0;
+			AF.F.C = 0;
 		}
 		if ((hl & 0x0FFF) + hl > 0x0FFF)
 		{
-			flags.H = 1;
+			AF.F.H = 1;
 		}
 		else
 		{
-			flags.H = 0;
+			AF.F.H = 0;
 		}
 	}
 		break;
 	case 42:
-		a = read((h << 8) + l);
-		l++;
-		if (l == 0)
+		AF.A = readBus((HL.H << 8) + HL.L);
+		HL.L++;
+		if (HL.L == 0)
 		{
-			h++;
+			HL.H++;
 		}
 		break;
 	case 43:
-		l--;
-		if (l == 255)
+		HL.L--;
+		if (HL.L == 255)
 		{
-			h--;
+			HL.H--;
 		}
 		break;
 	case 44:
-		inc(&l);
+		//inc\(&HL.L);
 		break;
 	case 45:
-		dec(&l);
+		dec(&HL.L);
 		break;
 	case 46:
-		l = ins.param8;
+		HL.L = ins.param8;
 		break;
 	case 47:
-		a = a ^ a;
-		flags.N = 1;
-		flags.H = 1;
+		AF.A = AF.A ^ AF.A;
+		AF.F.N = 1;
+		AF.F.H = 1;
 		break;
 	case 48:
-		if (flags.C == 0)
+		if (AF.F.C == 0)
 		{
-			pc += (int8_t)ins.param8;
+			PC += (int8_t)ins.param8;
 			ins.cycles += 4;
 		}
 		break;
 	case 49:
-		sp = ins.param16;
+		SP = ins.param16;
 		break;
 	case 50:
-		write((h << 8) + l, a);
-		l--;
-		if (l == 255)
+		writeBus((HL.H << 8) + HL.L, AF.A);
+		HL.L--;
+		if (HL.L == 255)
 		{
-			h--;
+			HL.H--;
 		}
 		break;
 	case 51:
-		sp++;
+		SP++;
 		break;
 	case 52:
-		incMem((h << 8) + l);
+		incMem((HL.H << 8) + HL.L);
 		break;
 	case 53:
-		decMem((h << 8) + l);
+		decMem((HL.H << 8) + HL.L);
 		break;
 	case 54:
-		write((h << 8) + l, ins.param8);
+		writeBus((HL.H << 8) + HL.L, ins.param8);
 		break;
 	case 55:
-		flags.N = 0;
-		flags.H = 0;
-		flags.C = 1;
+		AF.F.N = 0;
+		AF.F.H = 0;
+		AF.F.C = 1;
 		break;
 	case 56:
-		if (flags.C == 1)
+		if (AF.F.C == 1)
 		{
-			pc += (int8_t)ins.param8;
+			PC += (int8_t)ins.param8;
 			ins.cycles += 4;
 		}
 		break;
 	case 57:
 	{
-		tmp = h & 0b00001000;
-		flags.N = 0;
-		uint16_t hl = (h << 8) | l;
-		uint16_t res = hl + sp;
-		h = (res & 0xFF00) >> 8;
-		l = res & 0xFF;
-		if (hl + sp > 0xFFFF)
+		tmp = HL.H & 0b00001000;
+		AF.F.N = 0;
+		uint16_t hl = (HL.H << 8) | HL.L;
+		uint16_t res = hl + SP;
+		HL.H = (res & 0xFF00) >> 8;
+		HL.L = res & 0xFF;
+		if (hl + SP > 0xFFFF)
 		{
-			flags.C = 1;
+			AF.F.C = 1;
 		}
 		else
 		{
-			flags.C = 0;
+			AF.F.C = 0;
 		}
-		if ((hl & 0x0FFF) + sp > 0x0FFF)
+		if ((hl & 0x0FFF) + SP > 0x0FFF)
 		{
-			flags.H = 1;
+			AF.F.H = 1;
 		}
 		else
 		{
-			flags.H = 0;
+			AF.F.H = 0;
 		}
 	}
 		break;
 	case 58:
-		a = read((h << 8) + l);
-		l--;
-		if (l == 255)
+		AF.A = readBus((HL.H << 8) + HL.L);
+		HL.L--;
+		if (HL.L == 255)
 		{
-			h--;
+			HL.H--;
 		}
 		break;
 	case 59:
-		sp--;
+		SP--;
 		break;
 	case 60:
-		inc(&a);
+		//inc\(&AF.A);
 		break;
 	case 61:
-		dec(&a);
+		dec(&AF.A);
 		break;
 	case 62:
-		a = ins.param8;
+		AF.A = ins.param8;
 		break;
 	case 63:
-		flags.N = 0;
-		flags.H = 0;
-		flags.C = 1 - flags.C;
+		AF.F.N = 0;
+		AF.F.H = 0;
+		AF.F.C = 1 - AF.F.C;
 		break;
 	case 64:
-		b = b;
+		BC.B = BC.B;
 		break;
 	case 65:
-		b = c;
+		BC.B = BC.C;
 		break;
 	case 66:
-		b = d;
+		BC.B = DE.D;
 		break;
 	case 67:
-		b = e;
+		BC.B = DE.E;
 		break;
 	case 68:
-		b = h;
+		BC.B = HL.H;
 		break;
 	case 69:
-		b = l;
+		BC.B = HL.L;
 		break;
 	case 70:
-		b = read((h << 8) + l);
+		BC.B = readBus((HL.H << 8) + HL.L);
 		break;
 	case 71:
-		b = a;
+		BC.B = AF.A;
 		break;
 	case 72:
-		c = b;
+		BC.C = BC.B;
 		break;
 	case 73:
-		c = c;
+		BC.C = BC.C;
 		break;
 	case 74:
-		c = d;
+		BC.C = DE.D;
 		break;
 	case 75:
-		c = e;
+		BC.C = DE.E;
 		break;
 	case 76:
-		c = h;
+		BC.C = HL.H;
 		break;
 	case 77:
-		c = l;
+		BC.C = HL.L;
 		break;
 	case 78:
-		c = read((h << 8) + l);
+		BC.C = readBus((HL.H << 8) + HL.L);
 		break;
 	case 79:
-		c = a;
+		BC.C = AF.A;
 		break;
 	case 80:
-		d = b;
+		DE.D = BC.B;
 		break;
 	case 81:
-		d = c;
+		DE.D = BC.C;
 		break;
 	case 82:
-		d = d;
+		DE.D = DE.D;
 		break;
 	case 83:
-		d = e;
+		DE.D = DE.E;
 		break;
 	case 84:
-		d = h;
+		DE.D = HL.H;
 		break;
 	case 85:
-		d = l;
+		DE.D = HL.L;
 		break;
 	case 86:
-		d = read((h << 8) + l);
+		DE.D = readBus((HL.H << 8) + HL.L);
 		break;
 	case 87:
-		d = a;
+		DE.D = AF.A;
 		break;
 	case 88:
-		e = b;
+		DE.E = BC.B;
 		break;
 	case 89:
-		e = c;
+		DE.E = BC.C;
 		break;
 	case 90:
-		e = d;
+		DE.E = DE.D;
 		break;
 	case 91:
-		e = e;
+		DE.E = DE.E;
 		break;
 	case 92:
-		e = h;
+		DE.E = HL.H;
 		break;
 	case 93:
-		e = l;
+		DE.E = HL.L;
 		break;
 	case 94:
-		e = read((h << 8) + l);
+		DE.E = readBus((HL.H << 8) + HL.L);
 		break;
 	case 95:
-		e = a;
+		DE.E = AF.A;
 		break;
 	case 96:
-		h = b;
+		HL.H = BC.B;
 		break;
 	case 97:
-		h = c;
+		HL.H = BC.C;
 		break;
 	case 98:
-		h = d;
+		HL.H = DE.D;
 		break;
 	case 99:
-		h = e;
+		HL.H = DE.E;
 		break;
 	case 100:
-		h = h;
+		HL.H = HL.H;
 		break;
 	case 101:
-		h = l;
+		HL.H = HL.L;
 		break;
 	case 102:
-		h = read((h << 8) + l);
+		HL.H = readBus((HL.H << 8) + HL.L);
 		break;
 	case 103:
-		h = a;
+		HL.H = AF.A;
 		break;
 	case 104:
-		l = b;
+		HL.L = BC.B;
 		break;
 	case 105:
-		l = c;
+		HL.L = BC.C;
 		break;
 	case 106:
-		l = d;
+		HL.L = DE.D;
 		break;
 	case 107:
-		l = e;
+		HL.L = DE.E;
 		break;
 	case 108:
-		l = h;
+		HL.L = HL.H;
 		break;
 	case 109:
-		l = l;
+		HL.L = HL.L;
 		break;
 	case 110:
-		l = read((h << 8) + l);
+		HL.L = readBus((HL.H << 8) + HL.L);
 		break;
 	case 111:
-		l = a;
+		HL.L = AF.A;
 		break;
 	case 112:
-		write((h << 8) + l, b);
+		writeBus((HL.H << 8) + HL.L, BC.B);
 		break;
 	case 113:
-		write((h << 8) + l, c);
+		writeBus((HL.H << 8) + HL.L, BC.C);
 		break;
 	case 114:
-		write((h << 8) + l, d);
+		writeBus((HL.H << 8) + HL.L, DE.D);
 		break;
 	case 115:
-		write((h << 8) + l, e);
+		writeBus((HL.H << 8) + HL.L, DE.E);
 		break;
 	case 116:
-		write((h << 8) + l, h);
+		writeBus((HL.H << 8) + HL.L, HL.H);
 		break;
 	case 117:
-		write((h << 8) + l, l);
+		writeBus((HL.H << 8) + HL.L, HL.L);
 		break;
 	case 118:
 		throw "Not implemented";
 		break;
 	case 119:
-		write((h << 8) + l, a);
+		writeBus((HL.H << 8) + HL.L, AF.A);
 		break;
 	case 120:
-		a = b;
+		AF.A = BC.B;
 		break;
 	case 121:
-		a = c;
+		AF.A = BC.C;
 		break;
 	case 122:
-		a = d;
+		AF.A = DE.D;
 		break;
 	case 123:
-		a = e;
+		AF.A = DE.E;
 		break;
 	case 124:
-		a = h;
+		AF.A = HL.H;
 		break;
 	case 125:
-		a = l;
+		AF.A = HL.L;
 		break;
 	case 126:
-		a = read((h << 8) + l);
+		AF.A = readBus((HL.H << 8) + HL.L);
 		break;
 	case 127:
-		a = a;
+		AF.A = AF.A;
 		break;
 	case 128:
-		add(&a, b);
+		add(&AF.A, BC.B);
 		break;
 	case 129:
-		add(&a, c);
+		add(&AF.A, BC.C);
 		break;
 	case 130:
-		add(&a, d);
+		add(&AF.A, DE.D);
 		break;
 	case 131:
-		add(&a, e);
+		add(&AF.A, DE.E);
 		break;
 	case 132:
-		add(&a, h);
+		add(&AF.A, HL.H);
 		break;
 	case 133:
-		add(&a, l);
+		add(&AF.A, HL.L);
 		break;
 	case 134:
-		add(&a, read((h << 8) + l));
+		add(&AF.A, readBus((HL.H << 8) + HL.L));
 		break;
 	case 135:
-		add(&a, a);
+		add(&AF.A, AF.A);
 		break;
 	case 136:
-		add(&a, b + flags.C);
+		add(&AF.A, BC.B + AF.F.C);
 		break;
 	case 137:
-		add(&a, c + flags.C);
+		add(&AF.A, BC.C + AF.F.C);
 		break;
 	case 138:
-		add(&a, d + flags.C);
+		add(&AF.A, DE.D + AF.F.C);
 		break;
 	case 139:
-		add(&a, e + flags.C);
+		add(&AF.A, DE.E + AF.F.C);
 		break;
 	case 140:
-		add(&a, h + flags.C);
+		add(&AF.A, HL.H + AF.F.C);
 		break;
 	case 141:
-		add(&a, l + flags.C);
+		add(&AF.A, HL.L + AF.F.C);
 		break;
 	case 142:
-		add(&a, read((h << 8) + l) + flags.C);
+		add(&AF.A, readBus((HL.H << 8) + HL.L) + AF.F.C);
 		break;
 	case 143:
-		add(&a, a + flags.C);
+		add(&AF.A, AF.A + AF.F.C);
 		break;
 	case 144:
-		sub(&a, b);
+		sub(&AF.A, BC.B);
 		break;
 	case 145:
-		sub(&a, c);
+		sub(&AF.A, BC.C);
 		break;
 	case 146:
-		sub(&a, d);
+		sub(&AF.A, DE.D);
 		break;
 	case 147:
-		sub(&a, e);
+		sub(&AF.A, DE.E);
 		break;
 	case 148:
-		sub(&a, h);
+		sub(&AF.A, HL.H);
 		break;
 	case 149:
-		sub(&a, l);
+		sub(&AF.A, HL.L);
 		break;
 	case 150:
-		sub(&a, read((h << 8) + l));
+		sub(&AF.A, readBus((HL.H << 8) + HL.L));
 		break;
 	case 151:
-		sub(&a, a);
+		sub(&AF.A, AF.A);
 		break;
 	case 152:
-		sub(&a, b + flags.C);
+		sub(&AF.A, BC.B + AF.F.C);
 		break;
 	case 153:
-		sub(&a, c + flags.C);
+		sub(&AF.A, BC.C + AF.F.C);
 		break;
 	case 154:
-		sub(&a, d + flags.C);
+		sub(&AF.A, DE.D + AF.F.C);
 		break;
 	case 155:
-		sub(&a, e + flags.C);
+		sub(&AF.A, DE.E + AF.F.C);
 		break;
 	case 156:
-		sub(&a, h + flags.C);
+		sub(&AF.A, HL.H + AF.F.C);
 		break;
 	case 157:
-		sub(&a, l + flags.C);
+		sub(&AF.A, HL.L + AF.F.C);
 		break;
 	case 158:
-		sub(&a, read((h << 8) + l) + flags.C);
+		sub(&AF.A, readBus((HL.H << 8) + HL.L) + AF.F.C);
 		break;
 	case 159:
-		sub(&a, a + flags.C);
+		sub(&AF.A, AF.A + AF.F.C);
 		break;
 	case 160:
-		a = a & b;
-		flags.Z = a == 0 ? 1 : 0;
-		flags.N = 0;
-		flags.H = 1;
-		flags.C = 0;
+		AF.A = AF.A & BC.B;
+		AF.F.Z = AF.A == 0 ? 1 : 0;
+		AF.F.N = 0;
+		AF.F.H = 1;
+		AF.F.C = 0;
 		break;
 	case 161:
-		a = a & c;
-		flags.Z = a == 0 ? 1 : 0;
-		flags.N = 0;
-		flags.H = 1;
-		flags.C = 0;
+		AF.A = AF.A & BC.C;
+		AF.F.Z = AF.A == 0 ? 1 : 0;
+		AF.F.N = 0;
+		AF.F.H = 1;
+		AF.F.C = 0;
 		break;
 	case 162:
-		a = a & d;
-		flags.Z = a == 0 ? 1 : 0;
-		flags.N = 0;
-		flags.H = 1;
-		flags.C = 0;
+		AF.A = AF.A & DE.D;
+		AF.F.Z = AF.A == 0 ? 1 : 0;
+		AF.F.N = 0;
+		AF.F.H = 1;
+		AF.F.C = 0;
 		break;
 	case 163:
-		a = a & e;
-		flags.Z = a == 0 ? 1 : 0;
-		flags.N = 0;
-		flags.H = 1;
-		flags.C = 0;
+		AF.A = AF.A & DE.E;
+		AF.F.Z = AF.A == 0 ? 1 : 0;
+		AF.F.N = 0;
+		AF.F.H = 1;
+		AF.F.C = 0;
 		break;
 	case 164:
-		a = a & h;
-		flags.Z = a == 0 ? 1 : 0;
-		flags.N = 0;
-		flags.H = 1;
-		flags.C = 0;
+		AF.A = AF.A & HL.H;
+		AF.F.Z = AF.A == 0 ? 1 : 0;
+		AF.F.N = 0;
+		AF.F.H = 1;
+		AF.F.C = 0;
 		break;
 	case 165:
-		a = a & l;
-		flags.Z = a == 0 ? 1 : 0;
-		flags.N = 0;
-		flags.H = 1;
-		flags.C = 0;
+		AF.A = AF.A & HL.L;
+		AF.F.Z = AF.A == 0 ? 1 : 0;
+		AF.F.N = 0;
+		AF.F.H = 1;
+		AF.F.C = 0;
 		break;
 	case 166:
-		a = a & read((h << 8) + l);
-		flags.Z = a == 0 ? 1 : 0;
-		flags.N = 0;
-		flags.H = 1;
-		flags.C = 0;
+		AF.A = AF.A & readBus((HL.H << 8) + HL.L);
+		AF.F.Z = AF.A == 0 ? 1 : 0;
+		AF.F.N = 0;
+		AF.F.H = 1;
+		AF.F.C = 0;
 		break;
 	case 167:
-		a = a & a;
-		flags.Z = a == 0 ? 1 : 0;
-		flags.N = 0;
-		flags.H = 1;
-		flags.C = 0;
+		AF.A = AF.A & AF.A;
+		AF.F.Z = AF.A == 0 ? 1 : 0;
+		AF.F.N = 0;
+		AF.F.H = 1;
+		AF.F.C = 0;
 		break;
 	case 168:
-		a = a ^ b;
-		flags.Z = a == 0 ? 1 : 0;
-		flags.N = 0;
-		flags.H = 0;
-		flags.C = 0;
+		AF.A = AF.A ^ BC.B;
+		AF.F.Z = AF.A == 0 ? 1 : 0;
+		AF.F.N = 0;
+		AF.F.H = 0;
+		AF.F.C = 0;
 		break;
 	case 169:
-		a = a ^ c;
-		flags.Z = a == 0 ? 1 : 0;
-		flags.N = 0;
-		flags.H = 0;
-		flags.C = 0;
+		AF.A = AF.A ^ BC.C;
+		AF.F.Z = AF.A == 0 ? 1 : 0;
+		AF.F.N = 0;
+		AF.F.H = 0;
+		AF.F.C = 0;
 		break;
 	case 170:
-		a = a ^ d;
-		flags.Z = a == 0 ? 1 : 0;
-		flags.N = 0;
-		flags.H = 0;
-		flags.C = 0;
+		AF.A = AF.A ^ DE.D;
+		AF.F.Z = AF.A == 0 ? 1 : 0;
+		AF.F.N = 0;
+		AF.F.H = 0;
+		AF.F.C = 0;
 		break;
 	case 171:
-		a = a ^ e;
-		flags.Z = a == 0 ? 1 : 0;
-		flags.N = 0;
-		flags.H = 0;
-		flags.C = 0;
+		AF.A = AF.A ^ DE.E;
+		AF.F.Z = AF.A == 0 ? 1 : 0;
+		AF.F.N = 0;
+		AF.F.H = 0;
+		AF.F.C = 0;
 		break;
 	case 172:
-		a = a ^ h;
-		flags.Z = a == 0 ? 1 : 0;
-		flags.N = 0;
-		flags.H = 0;
-		flags.C = 0;
+		AF.A = AF.A ^ HL.H;
+		AF.F.Z = AF.A == 0 ? 1 : 0;
+		AF.F.N = 0;
+		AF.F.H = 0;
+		AF.F.C = 0;
 		break;
 	case 173:
-		a = a ^ l;
-		flags.Z = a == 0 ? 1 : 0;
-		flags.N = 0;
-		flags.H = 0;
-		flags.C = 0;
+		AF.A = AF.A ^ HL.L;
+		AF.F.Z = AF.A == 0 ? 1 : 0;
+		AF.F.N = 0;
+		AF.F.H = 0;
+		AF.F.C = 0;
 		break;
 	case 174:
-		a = a ^ read((h << 8) | l);
-		flags.Z = a == 0 ? 1 : 0;
-		flags.N = 0;
-		flags.H = 0;
-		flags.C = 0;
+		AF.A = AF.A ^ readBus((HL.H << 8) | HL.L);
+		AF.F.Z = AF.A == 0 ? 1 : 0;
+		AF.F.N = 0;
+		AF.F.H = 0;
+		AF.F.C = 0;
 		break;
 	case 175:
-		a = a ^ a;
-		flags.Z = a == 0 ? 1 : 0;
-		flags.N = 0;
-		flags.H = 0;
-		flags.C = 0;
+		AF.A = AF.A ^ AF.A;
+		AF.F.Z = AF.A == 0 ? 1 : 0;
+		AF.F.N = 0;
+		AF.F.H = 0;
+		AF.F.C = 0;
 		break;
 	case 176:
-		a = a | b;
-		flags.Z = a == 0 ? 1 : 0;
-		flags.N = 0;
-		flags.H = 0;
-		flags.C = 0;
+		AF.A = AF.A | BC.B;
+		AF.F.Z = AF.A == 0 ? 1 : 0;
+		AF.F.N = 0;
+		AF.F.H = 0;
+		AF.F.C = 0;
 		break;
 	case 177:
-		a = a | c;
-		flags.Z = a == 0 ? 1 : 0;
-		flags.N = 0;
-		flags.H = 0;
-		flags.C = 0;
+		AF.A = AF.A | BC.C;
+		AF.F.Z = AF.A == 0 ? 1 : 0;
+		AF.F.N = 0;
+		AF.F.H = 0;
+		AF.F.C = 0;
 		break;
 	case 178:
-		a = a | d;
-		flags.Z = a == 0 ? 1 : 0;
-		flags.N = 0;
-		flags.H = 0;
-		flags.C = 0;
+		AF.A = AF.A | DE.D;
+		AF.F.Z = AF.A == 0 ? 1 : 0;
+		AF.F.N = 0;
+		AF.F.H = 0;
+		AF.F.C = 0;
 		break;
 	case 179:
-		a = a | e;
-		flags.Z = a == 0 ? 1 : 0;
-		flags.N = 0;
-		flags.H = 0;
-		flags.C = 0;
+		AF.A = AF.A | DE.E;
+		AF.F.Z = AF.A == 0 ? 1 : 0;
+		AF.F.N = 0;
+		AF.F.H = 0;
+		AF.F.C = 0;
 		break;
 	case 180:
-		a = a | h;
-		flags.Z = a == 0 ? 1 : 0;
-		flags.N = 0;
-		flags.H = 0;
-		flags.C = 0;
+		AF.A = AF.A | HL.H;
+		AF.F.Z = AF.A == 0 ? 1 : 0;
+		AF.F.N = 0;
+		AF.F.H = 0;
+		AF.F.C = 0;
 		break;
 	case 181:
-		a = a | l;
-		flags.Z = a == 0 ? 1 : 0;
-		flags.N = 0;
-		flags.H = 0;
-		flags.C = 0;
+		AF.A = AF.A | HL.L;
+		AF.F.Z = AF.A == 0 ? 1 : 0;
+		AF.F.N = 0;
+		AF.F.H = 0;
+		AF.F.C = 0;
 		break;
 	case 182:
-		a = a | read((h << 8) + l);
-		flags.Z = a == 0 ? 1 : 0;
-		flags.N = 0;
-		flags.H = 0;
-		flags.C = 0;
+		AF.A = AF.A | readBus((HL.H << 8) + HL.L);
+		AF.F.Z = AF.A == 0 ? 1 : 0;
+		AF.F.N = 0;
+		AF.F.H = 0;
+		AF.F.C = 0;
 		break;
 	case 183:
-		a = a | a;
-		flags.Z = a == 0 ? 1 : 0;
-		flags.N = 0;
-		flags.H = 0;
-		flags.C = 0;
+		AF.A = AF.A | AF.A;
+		AF.F.Z = AF.A == 0 ? 1 : 0;
+		AF.F.N = 0;
+		AF.F.H = 0;
+		AF.F.C = 0;
 		break;
 	case 184:
-		cp(b);
+		cp(BC.B);
 		break;
 	case 185:
-		cp(c);
+		cp(BC.C);
 		break;
 	case 186:
-		cp(d);
+		cp(DE.D);
 		break;
 	case 187:
-		cp(e);
+		cp(DE.E);
 		break;
 	case 188:
-		cp(h);
+		cp(HL.H);
 		break;
 	case 189:
-		cp(l);
+		cp(HL.L);
 		break;
 	case 190:
-		cp(read((h << 8) + l));
+		cp(readBus((HL.H << 8) + HL.L));
 		break;
 	case 191:
-		cp(a);
+		cp(AF.A);
 		break;
 	case 192:
-		if (flags.Z == 0)
+		if (AF.F.Z == 0)
 		{
-			pc = read(sp++);
-			pc |= read(sp++) << 8;
+			PC = readBus(SP++);
+			PC |= readBus(SP++) << 8;
 			ins.cycles += 12;
 		}
 		break;
 	case 193:
-		c = read(sp++);
-		b = read(sp++);
+		BC.C = readBus(SP++);
+		BC.B = readBus(SP++);
 		break;
 	case 194:
-		if (flags.Z == 0)
+		if (AF.F.Z == 0)
 		{
-			pc = ins.param16;
+			PC = ins.param16;
 			ins.cycles += 4;
 		}
 		break;
 	case 195:
-		pc = ins.param16;
+		PC = ins.param16;
 		break;
 	case 196:
-		if (flags.Z == 0)
+		if (AF.F.Z == 0)
 		{
-			write(--sp, pc >> 8);
-			write(--sp, pc & 0b11111111);
-			pc = ins.param16;
+			writeBus(--SP, PC >> 8);
+			writeBus(--SP, PC & 0b11111111);
+			PC = ins.param16;
 			ins.cycles += 12;
 		}
 		break;
 	case 197:
-		write(--sp, b);
-		write(--sp, c);
+		writeBus(--SP, BC.B);
+		writeBus(--SP, BC.C);
 		break;
 	case 198:
-		add(&a, ins.param8);
+		add(&AF.A, ins.param8);
 		break;
 	case 199:
-		write(--sp, pc >> 8);
-		write(--sp, pc & 0b11111111);
-		pc = 0x0000;
+		writeBus(--SP, PC >> 8);
+		writeBus(--SP, PC & 0b11111111);
+		PC = 0x0000;
 		break;
 	case 200:
-		if (flags.Z == 1)
+		if (AF.F.Z == 1)
 		{
-			pc = read(sp++);
-			pc |= read(sp++) << 8;
+			PC = readBus(SP++);
+			PC |= readBus(SP++) << 8;
 			ins.cycles += 12;
 		}
 		break;
 	case 201:
-		pc = read(sp++);
-		pc |= read(sp++) << 8;
+		PC = readBus(SP++);
+		PC |= readBus(SP++) << 8;
 		break;
 	case 202:
-		if (flags.Z == 1)
+		if (AF.F.Z == 1)
 		{
-			pc = ins.param16;
+			PC = ins.param16;
 			ins.cycles += 4;
 		}
 		break;
@@ -1227,43 +1348,43 @@ void CPU::execute(Instruction& ins)
 		cb(ins.param8);
 		break;
 	case 204:
-		if (flags.Z == 1)
+		if (AF.F.Z == 1)
 		{
-			write(--sp, pc >> 8);
-			write(--sp, pc & 0b11111111);
-			pc = ins.param16;
+			writeBus(--SP, PC >> 8);
+			writeBus(--SP, PC & 0b11111111);
+			PC = ins.param16;
 			ins.cycles += 12;
 		}
 		break;
 	case 205:
-		write(--sp, pc >> 8);
-		write(--sp, pc & 0b11111111);
-		pc = ins.param16;
+		writeBus(--SP, PC >> 8);
+		writeBus(--SP, PC & 0b11111111);
+		PC = ins.param16;
 		break;
 	case 206:
-		add(&a, ins.param8 + flags.C);
+		add(&AF.A, ins.param8 + AF.F.C);
 		break;
 	case 207:
-		write(--sp, pc >> 8);
-		write(--sp, pc & 0b11111111);
-		pc = 0x0008;
+		writeBus(--SP, PC >> 8);
+		writeBus(--SP, PC & 0b11111111);
+		PC = 0x0008;
 		break;
 	case 208:
-		if (flags.C == 0)
+		if (AF.F.C == 0)
 		{
-			pc = read(sp++);
-			pc |= read(sp++) << 8;
+			PC = readBus(SP++);
+			PC |= readBus(SP++) << 8;
 			ins.cycles += 12;
 		}
 		break;
 	case 209:
-		e = read(sp++);
-		d = read(sp++);
+		DE.E = readBus(SP++);
+		DE.D = readBus(SP++);
 		break;
 	case 210:
-		if (flags.C == 0)
+		if (AF.F.C == 0)
 		{
-			pc = ins.param16;
+			PC = ins.param16;
 			ins.cycles += 4;
 		}
 		break;
@@ -1271,43 +1392,43 @@ void CPU::execute(Instruction& ins)
 		throw "Invalid opcode";
 		break;
 	case 212:
-		if (flags.C == 0)
+		if (AF.F.C == 0)
 		{
-			write(--sp, pc >> 8);
-			write(--sp, pc & 0b11111111);
-			pc = ins.param16;
+			writeBus(--SP, PC >> 8);
+			writeBus(--SP, PC & 0b11111111);
+			PC = ins.param16;
 			ins.cycles += 12;
 		}
 		break;
 	case 213:
-		write(--sp, d);
-		write(--sp, e);
+		writeBus(--SP, DE.D);
+		writeBus(--SP, DE.E);
 		break;
 	case 214:
-		sub(&a, ins.param8);
+		sub(&AF.A, ins.param8);
 		break;
 	case 215:
-		write(--sp, pc >> 8);
-		write(--sp, pc & 0b11111111);
-		pc = 0x0010;
+		writeBus(--SP, PC >> 8);
+		writeBus(--SP, PC & 0b11111111);
+		PC = 0x0010;
 		break;
 	case 216:
-		if (flags.C == 1)
+		if (AF.F.C == 1)
 		{
-			pc = read(sp++);
-			pc |= read(sp++) << 8;
+			PC = readBus(SP++);
+			PC |= readBus(SP++) << 8;
 			ins.cycles += 12;
 		}
 		break;
 	case 217:
 		ime = true;
-		pc = read(sp++);
-		pc |= read(sp++) << 8;
+		PC = readBus(SP++);
+		PC |= readBus(SP++) << 8;
 		break;
 	case 218:
-		if (flags.C == 1)
+		if (AF.F.C == 1)
 		{
-			pc = ins.param16;
+			PC = ins.param16;
 			ins.cycles += 4;
 		}
 		break;
@@ -1315,11 +1436,11 @@ void CPU::execute(Instruction& ins)
 		throw "Invalid opcode";
 		break;
 	case 220:
-		if (flags.C == 1)
+		if (AF.F.C == 1)
 		{
-			write(sp--, pc >> 8);
-			write(sp--, pc & 0b11111111);
-			pc = ins.param16;
+			writeBus(SP--, PC >> 8);
+			writeBus(SP--, PC & 0b11111111);
+			PC = ins.param16;
 			ins.cycles += 12;
 		}
 		break;
@@ -1327,22 +1448,22 @@ void CPU::execute(Instruction& ins)
 		throw "Invalid opcode";
 		break;
 	case 222:
-		sub(&a, ins.param8 + flags.C);
+		sub(&AF.A, ins.param8 + AF.F.C);
 		break;
 	case 223:
-		write(--sp, pc >> 8);
-		write(--sp, pc & 0b11111111);
-		pc = 0x0018;
+		writeBus(--SP, PC >> 8);
+		writeBus(--SP, PC & 0b11111111);
+		PC = 0x0018;
 		break;
 	case 224:
-		write(0xFF00 + ins.param8, a);
+		writeBus(0xFF00 + ins.param8, AF.A);
 		break;
 	case 225:
-		l = read(sp++);
-		h = read(sp++);
+		HL.L = readBus(SP++);
+		HL.H = readBus(SP++);
 		break;
 	case 226:
-		write(0xFF00 + c, a);
+		writeBus(0xFF00 + BC.C, AF.A);
 		break;
 	case 227:
 		throw "Invalid opcode";
@@ -1351,48 +1472,48 @@ void CPU::execute(Instruction& ins)
 		throw "Invalid opcode";
 		break;
 	case 229:
-		write(--sp, h);
-		write(--sp, l);
+		writeBus(--SP, HL.H);
+		writeBus(--SP, HL.L);
 		break;
 	case 230:
-		a = a & ins.param8;
-		flags.Z = a == 0 ? 1 : 0;
-		flags.N = 0;
-		flags.H = 1;
-		flags.C = 0;
+		AF.A = AF.A & ins.param8;
+		AF.F.Z = AF.A == 0 ? 1 : 0;
+		AF.F.N = 0;
+		AF.F.H = 1;
+		AF.F.C = 0;
 		break;
 	case 231:
-		write(--sp, pc >> 8);
-		write(--sp, pc & 0b11111111);
-		pc = 0x0020;
+		writeBus(--SP, PC >> 8);
+		writeBus(--SP, PC & 0b11111111);
+		PC = 0x0020;
 		break;
 	case 232:
-		flags.Z = 0;
-		flags.N = 0;
-		if ((sp & 0x0FFF) + ins.param8 > 0x0FFF)
+		AF.F.Z = 0;
+		AF.F.N = 0;
+		if ((SP & 0x0FFF) + ins.param8 > 0x0FFF)
 		{
-			flags.H = 1;
+			AF.F.H = 1;
 		}
 		else
 		{
-			flags.H = 0;
+			AF.F.H = 0;
 		}
-		sp += ins.param8; 
-		if (sp < ins.param8)
+		SP += ins.param8; 
+		if (SP < ins.param8)
 		{
-			flags.C = 1;
+			AF.F.C = 1;
 		}
 		else
 		{
-			flags.C = 0;
+			AF.F.C = 0;
 		}
 		break;
 	case 233:
-		pc = l;
-		pc |= h << 8;
+		PC = HL.L;
+		PC |= HL.H << 8;
 		break;
 	case 234:
-		write(ins.param16, a);
+		writeBus(ins.param16, AF.A);
 		break;
 	case 235:
 		throw "Invalid opcode";
@@ -1404,27 +1525,27 @@ void CPU::execute(Instruction& ins)
 		throw "Invalid opcode";
 		break;
 	case 238:
-		a = a ^ ins.param8;
-		flags.Z = a == 0 ? 1 : 0;
-		flags.N = 0;
-		flags.H = 0;
-		flags.C = 0;
+		AF.A = AF.A ^ ins.param8;
+		AF.F.Z = AF.A == 0 ? 1 : 0;
+		AF.F.N = 0;
+		AF.F.H = 0;
+		AF.F.C = 0;
 		break;
 	case 239:
-		write(--sp, pc >> 8);
-		write(--sp, pc & 0b11111111);
-		pc = 0x0028;
+		writeBus(--SP, PC >> 8);
+		writeBus(--SP, PC & 0b11111111);
+		PC = 0x0028;
 		break;
 	case 240:
-		a = read(0xFF00 | ins.param8);
+		AF.A = readBus(0xFF00 | ins.param8);
 		break;
 	case 241:
-		flags.reg = read(sp++);
-		flags.reg &= 0xF0;
-		a = read(sp++);
+		AF.F.reg = readBus(SP++);
+		AF.F.reg &= 0xF0;
+		AF.A = readBus(SP++);
 		break;
 	case 242:
-		a = read(0xFF00 | c);
+		AF.A = readBus(0xFF00 | BC.C);
 		break;
 	case 243:
 		ime = false;
@@ -1433,39 +1554,39 @@ void CPU::execute(Instruction& ins)
 		throw "Invalid opcode";
 		break;
 	case 245:
-		write(--sp, a);
-		write(--sp, flags.reg);
+		writeBus(--SP, AF.A);
+		writeBus(--SP, AF.F.reg);
 		break;
 	case 246:
-		a = a | ins.param8;
-		flags.Z = a == 0 ? 1 : 0;
-		flags.N = 0;
-		flags.H = 0;
-		flags.C = 0;
+		AF.A = AF.A | ins.param8;
+		AF.F.Z = AF.A == 0 ? 1 : 0;
+		AF.F.N = 0;
+		AF.F.H = 0;
+		AF.F.C = 0;
 		break;
 	case 247:
-		write(--sp, pc >> 8);
-		write(--sp, pc & 0b11111111);
-		pc = 0x0030;
+		writeBus(--SP, PC >> 8);
+		writeBus(--SP, PC & 0b11111111);
+		PC = 0x0030;
 		break;
 	case 248:
 	{
-		uint16_t init = sp;
-		uint16_t res = sp + (int8_t)ins.param8;
-		h = res >> 8;
-		l = res & 0xFF;
-		flags.Z = 0;
-		flags.H = (init & 0x0FFF) + (int8_t)ins.param8 > 0x0FFF;
-		flags.N = 0;
-		flags.C = (init & 0x8000) && !(res & 0x8000);
+		uint16_t init = SP;
+		uint16_t res = SP + (int8_t)ins.param8;
+		HL.H = res >> 8;
+		HL.L = res & 0xFF;
+		AF.F.Z = 0;
+		AF.F.H = (init & 0x0FFF) + (int8_t)ins.param8 > 0x0FFF;
+		AF.F.N = 0;
+		AF.F.C = (init & 0x8000) && !(res & 0x8000);
 	}
 		break;
 	case 249:
-		sp = l;
-		sp |= h << 8;
+		SP = HL.L;
+		SP |= HL.H << 8;
 		break;
 	case 250:
-		a = read(ins.param16);
+		AF.A = readBus(ins.param16);
 		break;
 	case 251:
 		ime = true;
@@ -1480,196 +1601,176 @@ void CPU::execute(Instruction& ins)
 		cp(ins.param8);
 		break;
 	case 255:
-		write(--sp, pc >> 8);
-		write(--sp, pc & 0b11111111);
-		pc = 0x0038;
+		writeBus(--SP, PC >> 8);
+		writeBus(--SP, PC & 0b11111111);
+		PC = 0x0038;
 		break;
 	}
 }
 
 
-void CPU::inc(uint8_t* reg)
-{
-	(*reg)++;
-	flags.N = 0;
-	if (*reg == 0)
-	{
-		flags.Z = 1;
-	}
-	else
-	{
-		flags.Z = 0;
-	}
-	if ((*reg & 0b00001111) == 0)
-	{
-		flags.H = 1;
-	}
-	else
-	{
-		flags.H = 0;
-	}
-}
+
 
 void CPU::incMem(uint16_t addr)
 {
-	write(addr, read(addr) + 1);
-	flags.N = 0;
-	if (read(addr) == 256)
+	writeBus(addr, readBus(addr) + 1);
+	AF.F.N = 0;
+	if (readBus(addr) == 256)
 	{
-		write(addr, 0);
-		flags.Z = 1;
+		writeBus(addr, 0);
+		AF.F.Z = 1;
 	}
 	else
 	{
-		flags.Z = 0;
+		AF.F.Z = 0;
 	}
-	if ((read(addr) & 0b00001111) == 0)
+	if ((readBus(addr) & 0b00001111) == 0)
 	{
-		flags.H = 1;
+		AF.F.H = 1;
 	}
 	else
 	{
-		flags.H = 0;
+		AF.F.H = 0;
 	}
 }
 
 void CPU::dec(uint8_t* reg)
 {
 	(*reg)--;
-	flags.N = 0;
+	AF.F.N = 0;
 	if (*reg == -1)
 	{
 		*reg = 255;
 	}
 	if (*reg == 0)
 	{
-		flags.Z = 1;
+		AF.F.Z = 1;
 	}
 	else
 	{
-		flags.Z = 0;
+		AF.F.Z = 0;
 	}
 	if ((*reg & 0b00001111) == 0b00001111)
 	{
-		flags.H = 1;
+		AF.F.H = 1;
 	}
 	else
 	{
-		flags.H = 0;
+		AF.F.H = 0;
 	}
 }
 
 void CPU::decMem(uint16_t addr)
 {
-	write(addr, read(addr) - 1);
-	flags.N = 0;
-	if (read(addr) == -1)
+	writeBus(addr, readBus(addr) - 1);
+	AF.F.N = 0;
+	if (readBus(addr) == -1)
 	{
-		write(addr, 255);
-		flags.Z = 1;
+		writeBus(addr, 255);
+		AF.F.Z = 1;
 	}
 	else
 	{
-		flags.Z = 0;
+		AF.F.Z = 0;
 	}
-	if ((read(addr) & 0b00001111) == 0)
+	if ((readBus(addr) & 0b00001111) == 0)
 	{
-		flags.H = 1;
+		AF.F.H = 1;
 	}
 	else
 	{
-		flags.H = 0;
+		AF.F.H = 0;
 	}
 }
 
 void CPU::add(uint8_t* reg, int val)
 {
-	flags.N = 0;
+	AF.F.N = 0;
 	*reg += val;
 	if (((*reg & 0xF + (val & 0xF)) & 0x10) == 0x10)
 	{
-		flags.H = 1;
+		AF.F.H = 1;
 	}
 	else
 	{
-		flags.H = 0;
+		AF.F.H = 0;
 	}
 	if (*reg > 255)
 	{
 		*reg -= 256;
-		flags.C = 1;
+		AF.F.C = 1;
 	}
 	else if (*reg < 0)
 	{
 		*reg += 256;
-		flags.C = 1;
+		AF.F.C = 1;
 	}
 	else
 	{
-		flags.C = 0;
+		AF.F.C = 0;
 	}
 	if (*reg == 0)
 	{
-		flags.Z = 1;
+		AF.F.Z = 1;
 	}
 	else
 	{
-		flags.Z = 0;
+		AF.F.Z = 0;
 	}
 }
 
 void CPU::sub(uint8_t* reg, int val)
 {
-	flags.N = 1;
+	AF.F.N = 1;
 	uint8_t init = *reg;
 	*reg -= val;
 	if (((*reg & 0xF + (((val & 0xF) ^ (0xF)) + 1) & 0x10) == 0x10))
 	{
-		flags.H = 1;
+		AF.F.H = 1;
 	}
 	else
 	{
-		flags.H = 0;
+		AF.F.H = 0;
 	}
 	if (*reg > init)
 	{
-		flags.C = 1;
+		AF.F.C = 1;
 	}
 	else
 	{
-		flags.C = 0;
+		AF.F.C = 0;
 	}
 	if (*reg == 0)
 	{
-		flags.Z = 1;
+		AF.F.Z = 1;
 	}
 	else
 	{
-		flags.Z = 0;
+		AF.F.Z = 0;
 	}
 }
 
 void CPU::cp(int val)
 {
-	flags.N = 1;
-	int diff = a - val;
+	AF.F.N = 1;
+	int diff = AF.A - val;
 	if (diff < 0)
 	{
-		flags.C = 1;
-		flags.H = 0;
-		flags.Z = 0;
+		AF.F.C = 1;
+		AF.F.H = 0;
+		AF.F.Z = 0;
 	}
 	else if (diff > 0)
 	{
-		flags.C = 0;
-		flags.H = 1;
-		flags.Z = 0;
+		AF.F.C = 0;
+		AF.F.H = 1;
+		AF.F.Z = 0;
 	}
 	else
 	{
-		flags.C = 0;
-		flags.H = 0;
-		flags.Z = 1;
+		AF.F.C = 0;
+		AF.F.H = 0;
+		AF.F.Z = 1;
 	}
 }
 
@@ -1680,103 +1781,103 @@ void CPU::cb(uint8_t opcode)
 	uint8_t data;
 	switch (opcode & 0b111) {
 	case 0:
-		data = b;
+		data = BC.B;
 		break;
 	case 1:
-		data = c;
+		data = BC.C;
 		break;
 	case 2:
-		data = d;
+		data = DE.D;
 		break;
 	case 3:
-		data = e;
+		data = DE.E;
 		break;
 	case 4:
-		data = h;
+		data = HL.H;
 		break;
 	case 5:
-		data = l;
+		data = HL.L;
 		break;
 	case 6:
-		data = read((h << 8) + l);
+		data = readBus((HL.H << 8) + HL.L);
 		break;
 	case 7:
-		data = a;
+		data = AF.A;
 		break;
 	}
 	int tmp;
 	if ((opcode & 0b11111000) == 0b00000000) { // RLC
-		flags.N = 0;
-		flags.H = 0;
-		flags.C = data & 0b10000000;
+		AF.F.N = 0;
+		AF.F.H = 0;
+		AF.F.C = data & 0b10000000;
 		data = data << 1;
-		data = data | flags.C;
-		flags.Z = data == 0;
+		data = data | AF.F.C;
+		AF.F.Z = data == 0;
 	}
 	else if ((opcode & 0b11111000) == 0b00001000) { // RRC
-		flags.N = 0;
-		flags.H = 0;
-		flags.C = data & 0b00000001;
+		AF.F.N = 0;
+		AF.F.H = 0;
+		AF.F.C = data & 0b00000001;
 		data = data >> 1;
-		data = data | (flags.C << 7);
-		flags.Z = data == 0;
+		data = data | (AF.F.C << 7);
+		AF.F.Z = data == 0;
 	}
 	else if ((opcode & 0b11111000) == 0b00010000) { // RL
-		tmp = flags.C;
-		flags.N = 0;
-		flags.H = 0;
-		flags.C = data & 0b10000000;
+		tmp = AF.F.C;
+		AF.F.N = 0;
+		AF.F.H = 0;
+		AF.F.C = data & 0b10000000;
 		data = data << 1;
 		data = data | tmp;
-		flags.Z = data == 0;
+		AF.F.Z = data == 0;
 	}
 	else if ((opcode & 0b11111000) == 0b00011000) { // RR
-		tmp = flags.C;
-		flags.N = 0;
-		flags.H = 0;
-		flags.C = data & 0b00000001;
+		tmp = AF.F.C;
+		AF.F.N = 0;
+		AF.F.H = 0;
+		AF.F.C = data & 0b00000001;
 		data = data >> 1;
 		data = data | (tmp << 7);
-		flags.Z = data == 0;
+		AF.F.Z = data == 0;
 	}
 	else if ((opcode & 0b11111000) == 0b00100000) { // SLA
-		flags.N = 0;
-		flags.H = 0;
-		flags.C = data & 0b10000000;
+		AF.F.N = 0;
+		AF.F.H = 0;
+		AF.F.C = data & 0b10000000;
 		data = data << 1;
-		flags.Z = data == 0;
+		AF.F.Z = data == 0;
 	}
 	else if ((opcode & 0b11111000) == 0b00101000) { // SRA
 		tmp = data & 0b10000000;
-		flags.N = 0;
-		flags.H = 0;
-		flags.C = data & 0b00000001;
+		AF.F.N = 0;
+		AF.F.H = 0;
+		AF.F.C = data & 0b00000001;
 		data = data >> 1;
 		data = data | tmp;
-		flags.Z = data == 0;
+		AF.F.Z = data == 0;
 	}
 	else if ((opcode & 0b11111000) == 0b00110000) { // SWAP
-		flags.N = 0;
-		flags.H = 0;
-		flags.C = 0;
+		AF.F.N = 0;
+		AF.F.H = 0;
+		AF.F.C = 0;
 		tmp = data & 0b00001111;
 		data = data >> 4;
 		data = data | (tmp << 4);
-		flags.Z = data == 0;
+		AF.F.Z = data == 0;
 	}
 	else if ((opcode & 0b11111000) == 0b00111000) { // SRL
 
-		flags.N = 0;
-		flags.H = 0;
-		flags.C = data & 0b00000001;
+		AF.F.N = 0;
+		AF.F.H = 0;
+		AF.F.C = data & 0b00000001;
 		data = data >> 1;
-		flags.Z = data == 0;
+		AF.F.Z = data == 0;
 	}
 	else if ((opcode & 0b11000000) == 0b01000000) { // BIT
-		flags.N = 0;
-		flags.H = 1;
-		flags.Z = data & (1 << bit);
-		flags.Z = 1 - flags.Z;
+		AF.F.N = 0;
+		AF.F.H = 1;
+		AF.F.Z = data & (1 << bit);
+		AF.F.Z = 1 - AF.F.Z;
 	}
 	else if ((opcode & 0b11000000) == 0b10000000) { // RES
 		data = data & (~(1 << bit));
@@ -1787,37 +1888,37 @@ void CPU::cb(uint8_t opcode)
 
 	switch (opcode & 0b111) {
 	case 0:
-		b = data;
+		BC.B = data;
 		break;
 	case 1:
-		c = data;
+		BC.C = data;
 		break;
 	case 2:
-		d = data;
+		DE.D = data;
 		break;
 	case 3:
-		e = data;
+		DE.E = data;
 		break;
 	case 4:
-		h = data;
+		HL.H = data;
 		break;
 	case 5:
-		l = data;
+		HL.L = data;
 		break;
 	case 6:
-		write((h << 8) + l, data);
+		writeBus((HL.H << 8) + HL.L, data);
 		break;
 	case 7:
-		a = data;
+		AF.A = data;
 		break;
 	}
 }
 
 uint8_t CPU::daa()
 {
-	if (flags.N) {
-		if (flags.C) {
-			if (flags.H) {
+	if (AF.F.N) {
+		if (AF.F.C) {
+			if (AF.F.H) {
 				return 0x9A;
 			}
 			else {
@@ -1825,7 +1926,7 @@ uint8_t CPU::daa()
 			}
 		}
 		else {
-			if (flags.H) {
+			if (AF.F.H) {
 				return 0xFA;
 			}
 			else {
@@ -1834,9 +1935,9 @@ uint8_t CPU::daa()
 		}
 	}
 	else {
-		if (flags.C) {
-			if ((a >> 4) < 0x03) {
-				if ((a & 0x0F) < 0x0A) {
+		if (AF.F.C) {
+			if ((AF.A >> 4) < 0x03) {
+				if ((AF.A & 0x0F) < 0x0A) {
 					return 0x60;
 				}
 				else {
@@ -1848,31 +1949,31 @@ uint8_t CPU::daa()
 			}
 		}
 		else {
-			if (flags.H) {
-				if ((a >> 4) < 0x0A) {
+			if (AF.F.H) {
+				if ((AF.A >> 4) < 0x0A) {
 					return 0x06;
 				}
 				else {
-					flags.C = true;
+					AF.F.C = true;
 					return 0x66;
 				}
 			}
 			else {
-				if ((a & 0x0F) < 0x0A) {
-					if ((a >> 4) < 0x0A) {
+				if ((AF.A & 0x0F) < 0x0A) {
+					if ((AF.A >> 4) < 0x0A) {
 						return 0x00;
 					}
 					else {
-						flags.C = true;
+						AF.F.C = true;
 						return 0x60;
 					}
 				}
 				else {
-					if ((a >> 4) < 0x09) {
+					if ((AF.A >> 4) < 0x09) {
 						return 0x06;
 					}
 					else {
-						flags.C = true;
+						AF.F.C = true;
 						return 0x66;
 					}
 				}
