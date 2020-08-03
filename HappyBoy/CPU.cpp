@@ -324,15 +324,15 @@ void CPU::DAA() {
 }
 
 void CPU::CPL() {
-
+	AF.A = ~AF.A;
 }
 
 void CPU::SCF() {
-
+	AF.F.C = 1;
 }
 
 void CPU::CCF() {
-
+	AF.F.C = !AF.F.C;
 }
 
 template <WritebackMode writeMode, AddressingMode readMode>
