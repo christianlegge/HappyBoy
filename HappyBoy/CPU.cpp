@@ -812,7 +812,7 @@ void CPU::reset()
 }
 
 uint8_t CPU::fetch() {
-	return bus->read(SP++);
+	return bus->read(PC++);
 }
 
 Instruction CPU::fetch_debug() {

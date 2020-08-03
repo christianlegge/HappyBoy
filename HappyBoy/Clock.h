@@ -13,7 +13,7 @@ public:
 	void tick();
 	void step();
 	void frame();
-	bool paused = false;
+	bool paused = true;
 	uint16_t breakpoint = 0xffff;
 private:
 	std::shared_ptr<CPU> cpu;
