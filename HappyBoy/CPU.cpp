@@ -128,6 +128,13 @@ void CPU::writeValue(T value)
 	case AddressingMode::Absolute16:
 		writeBus(fetch() | (fetch() << 8), value);
 		break;
+	case AddressingMode::Absolute16Double:
+	{
+		uint16_t addr = fetch() | (fetch() << 8);
+		writeBus(addr, value & 0xFF);
+		writeBus(addr + 1, value >> 8);
+	}
+	break;
 	case AddressingMode::AbsoluteBC:
 		writeBus(BC.BC, value);
 		break;
@@ -640,7 +647,7 @@ void CPU::writeBus(uint16_t addr, uint8_t data)
 CPU::CPU(std::shared_ptr<Bus> bus) : bus(bus)
 {
 	opcode_funcs = {
- /*0x*/	&CPU::NOP, &CPU::LD<AddressingMode::RegisterBC, AddressingMode::Immediate16, uint16_t>, &CPU::LD<AddressingMode::AbsoluteBC, AddressingMode::RegisterA>, &CPU::INC<AddressingMode::RegisterBC, uint16_t>, &CPU::INC<AddressingMode::RegisterB>, &CPU::DEC<AddressingMode::RegisterB>, &CPU::LD<AddressingMode::RegisterB, AddressingMode::Immediate8>, &CPU::RLCA, &CPU::LD<AddressingMode::Absolute16, AddressingMode::RegisterSP>, &CPU::ADD<AddressingMode::RegisterHL, AddressingMode::RegisterBC, uint16_t>, &CPU::LD<AddressingMode::RegisterA, AddressingMode::AbsoluteBC>, &CPU::DEC<AddressingMode::RegisterBC, uint16_t>, &CPU::INC<AddressingMode::RegisterC>, &CPU::DEC<AddressingMode::RegisterC>, &CPU::LD<AddressingMode::RegisterC, AddressingMode::Immediate8>, &CPU::RRCA,
+ /*0x*/	&CPU::NOP, &CPU::LD<AddressingMode::RegisterBC, AddressingMode::Immediate16, uint16_t>, &CPU::LD<AddressingMode::AbsoluteBC, AddressingMode::RegisterA>, &CPU::INC<AddressingMode::RegisterBC, uint16_t>, &CPU::INC<AddressingMode::RegisterB>, &CPU::DEC<AddressingMode::RegisterB>, &CPU::LD<AddressingMode::RegisterB, AddressingMode::Immediate8>, &CPU::RLCA, &CPU::LD<AddressingMode::Absolute16Double, AddressingMode::RegisterSP, uint16_t>, &CPU::ADD<AddressingMode::RegisterHL, AddressingMode::RegisterBC, uint16_t>, &CPU::LD<AddressingMode::RegisterA, AddressingMode::AbsoluteBC>, &CPU::DEC<AddressingMode::RegisterBC, uint16_t>, &CPU::INC<AddressingMode::RegisterC>, &CPU::DEC<AddressingMode::RegisterC>, &CPU::LD<AddressingMode::RegisterC, AddressingMode::Immediate8>, &CPU::RRCA,
 		&CPU::STOP, &CPU::LD<AddressingMode::RegisterDE, AddressingMode::Immediate16, uint16_t>, &CPU::LD<AddressingMode::AbsoluteDE, AddressingMode::RegisterA>, &CPU::INC<AddressingMode::RegisterDE, uint16_t>, &CPU::INC<AddressingMode::RegisterD>, &CPU::DEC<AddressingMode::RegisterD>, &CPU::LD<AddressingMode::RegisterD, AddressingMode::Immediate8>, &CPU::RLA, &CPU::JR<ConditionMode::Always, AddressingMode::Immediate8>, &CPU::ADD<AddressingMode::RegisterHL, AddressingMode::RegisterDE, uint16_t>, &CPU::LD<AddressingMode::RegisterA, AddressingMode::AbsoluteDE>, &CPU::DEC<AddressingMode::RegisterDE, uint16_t>, &CPU::INC<AddressingMode::RegisterE>, &CPU::DEC<AddressingMode::RegisterE>, &CPU::LD<AddressingMode::RegisterE, AddressingMode::Immediate8>, &CPU::RRA,
 		&CPU::JR<ConditionMode::NZ, AddressingMode::Immediate8>, &CPU::LD<AddressingMode::RegisterHL, AddressingMode::Immediate16, uint16_t>, &CPU::LD<AddressingMode::AbsoluteHLI, AddressingMode::RegisterA>, &CPU::INC<AddressingMode::RegisterHL, uint16_t>, &CPU::INC<AddressingMode::RegisterH>, &CPU::DEC<AddressingMode::RegisterH>, &CPU::LD<AddressingMode::RegisterH, AddressingMode::Immediate8>, &CPU::DAA, &CPU::JR<ConditionMode::Z, AddressingMode::Immediate8>, &CPU::ADD<AddressingMode::RegisterHL, AddressingMode::RegisterHL, uint16_t>, &CPU::LD<AddressingMode::RegisterA, AddressingMode::AbsoluteHLI>, &CPU::DEC<AddressingMode::RegisterHL, uint16_t>, &CPU::INC<AddressingMode::RegisterL>, &CPU::DEC<AddressingMode::RegisterL>, &CPU::LD<AddressingMode::RegisterL, AddressingMode::Immediate8>, &CPU::CPL,
 		&CPU::JR<ConditionMode::NC, AddressingMode::Immediate8>, &CPU::LD<AddressingMode::RegisterSP, AddressingMode::Immediate16, uint16_t>, &CPU::LD<AddressingMode::AbsoluteHLD, AddressingMode::RegisterA>, &CPU::INC<AddressingMode::RegisterSP, uint16_t>, &CPU::INC<AddressingMode::AbsoluteHL>, &CPU::DEC<AddressingMode::AbsoluteHL>, &CPU::LD<AddressingMode::AbsoluteHL, AddressingMode::Immediate8>, &CPU::SCF, &CPU::JR<ConditionMode::C, AddressingMode::Immediate8>, &CPU::ADD<AddressingMode::RegisterHL, AddressingMode::RegisterSP, uint16_t>, &CPU::LD<AddressingMode::RegisterA, AddressingMode::AbsoluteHLD>, &CPU::DEC<AddressingMode::RegisterSP, uint16_t>, &CPU::INC<AddressingMode::RegisterA>, &CPU::DEC<AddressingMode::RegisterA>, &CPU::LD<AddressingMode::RegisterA, AddressingMode::Immediate8>, &CPU::CCF,

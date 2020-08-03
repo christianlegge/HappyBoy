@@ -19,7 +19,7 @@ enum class AddressingMode {
 	RegisterA, RegisterB, RegisterC, RegisterD, RegisterE, RegisterF, RegisterH, RegisterL,
 	RegisterAF, RegisterBC, RegisterDE, RegisterHL, RegisterSP,
 	Immediate8, Immediate16, ImmediateHighPage,
-	Absolute16, AbsoluteBC, AbsoluteDE, AbsoluteHL, AbsoluteHLI, AbsoluteHLD, AbsoluteHighPageC,
+	Absolute16, AbsoluteBC, AbsoluteDE, AbsoluteHL, AbsoluteHLI, AbsoluteHLD, AbsoluteHighPageC, Absolute16Double,
 	StackPlusImmediate
 };
 
