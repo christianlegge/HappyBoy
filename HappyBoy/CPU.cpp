@@ -37,6 +37,38 @@ T& CPU::getOperand()
 	}
 }
 
+template <class T, WritebackMode mode>
+T& CPU::getWriteTarget() {
+	switch (mode) {
+	case WritebackMode::RegisterA:
+		return AF.A;
+		break;
+	case WritebackMode::RegisterB:
+		return BC.B;
+		break;
+	case WritebackMode::RegisterC:
+		return BC.C;
+		break;
+	case WritebackMode::RegisterD:
+		return DE.D;
+		break;
+	case WritebackMode::RegisterE:
+		return DE.E;
+		break;
+	case WritebackMode::RegisterF:
+		return AF.F.reg;
+		break;
+	case WritebackMode::RegisterH:
+		return HL.H;
+		break;
+	case WritebackMode::RegisterL:
+		return HL.L;
+		break;
+	default:
+		throw std::logic_error{ "Not implemented" };
+	}
+}
+
 template<class T, WritebackMode mode>
 void CPU::writeValue(T value)
 {
@@ -129,6 +161,45 @@ void CPU::RLCA() {
 	AF.F.reg &= 0x80;
 }
 
+template <WritebackMode writeMode, AddressingMode readMode>
+void CPU::ADD()
+{
+	AF.F.N = 0;
+	uint8_t target = getWriteTarget<writeMode>();
+	target += getOperand<readMode>();
+	/*if (((target & 0xF + (val & 0xF)) & 0x10) == 0x10)
+	{
+		AF.F.H = 1;
+	}
+	else
+	{
+		AF.F.H = 0;
+	}
+	if (*reg > 255)
+	{
+		*reg -= 256;
+		AF.F.C = 1;
+	}
+	else if (*reg < 0)
+	{
+		*reg += 256;
+		AF.F.C = 1;
+	}
+	else
+	{
+		AF.F.C = 0;
+	}
+	if (*reg == 0)
+	{
+		AF.F.Z = 1;
+	}
+	else
+	{
+		AF.F.Z = 0;
+	}*/
+	writeValue<writeMode>(target);
+}
+
 void CPU::RRCA() {
 	AF.F.C = AF.A & 0x01;
 	AF.A >>= 1;
@@ -159,6 +230,30 @@ void CPU::LD() {
 
 void CPU::HALT() {
 	throw std::logic_error{ "Not implemented" };
+}
+
+template <WritebackMode writeMode, AddressingMode readMode>
+void CPU::ADC() {
+	AF.F.N = 0;
+	uint8_t target = getWriteTarget<writeMode>();
+	target += getOperand<readMode>() + AF.F.C;
+	writeValue<writeMode>(target);
+}
+
+template <WritebackMode writeMode, AddressingMode readMode>
+void CPU::SUB() {
+	AF.F.N = 1;
+	uint8_t target = getWriteTarget<writeMode>();
+	target = target - getOperand<readMode>();
+	writeValue<writeMode>(target);
+}
+
+template <WritebackMode writeMode, AddressingMode readMode>
+void CPU::SBC() {
+	AF.F.N = 1;
+	uint8_t target = getWriteTarget<writeMode>();
+	target = target - getOperand<readMode>() - AF.F.C;
+	writeValue<writeMode>(target);
 }
 
 uint8_t CPU::readBus(uint16_t addr)
@@ -1049,52 +1144,36 @@ void CPU::execute(Instruction& ins)
 		AF.A = AF.A;
 		break;
 	case 128:
-		add(&AF.A, BC.B);
 		break;
 	case 129:
-		add(&AF.A, BC.C);
 		break;
 	case 130:
-		add(&AF.A, DE.D);
 		break;
 	case 131:
-		add(&AF.A, DE.E);
 		break;
 	case 132:
-		add(&AF.A, HL.H);
 		break;
 	case 133:
-		add(&AF.A, HL.L);
 		break;
 	case 134:
-		add(&AF.A, readBus((HL.H << 8) + HL.L));
 		break;
 	case 135:
-		add(&AF.A, AF.A);
 		break;
 	case 136:
-		add(&AF.A, BC.B + AF.F.C);
 		break;
 	case 137:
-		add(&AF.A, BC.C + AF.F.C);
 		break;
 	case 138:
-		add(&AF.A, DE.D + AF.F.C);
 		break;
 	case 139:
-		add(&AF.A, DE.E + AF.F.C);
 		break;
 	case 140:
-		add(&AF.A, HL.H + AF.F.C);
 		break;
 	case 141:
-		add(&AF.A, HL.L + AF.F.C);
 		break;
 	case 142:
-		add(&AF.A, readBus((HL.H << 8) + HL.L) + AF.F.C);
 		break;
 	case 143:
-		add(&AF.A, AF.A + AF.F.C);
 		break;
 	case 144:
 		sub(&AF.A, BC.B);
@@ -1372,7 +1451,6 @@ void CPU::execute(Instruction& ins)
 		writeBus(--SP, BC.C);
 		break;
 	case 198:
-		add(&AF.A, ins.param8);
 		break;
 	case 199:
 		writeBus(--SP, PC >> 8);
@@ -1416,7 +1494,6 @@ void CPU::execute(Instruction& ins)
 		PC = ins.param16;
 		break;
 	case 206:
-		add(&AF.A, ins.param8 + AF.F.C);
 		break;
 	case 207:
 		writeBus(--SP, PC >> 8);
@@ -1734,42 +1811,6 @@ void CPU::decMem(uint16_t addr)
 	else
 	{
 		AF.F.H = 0;
-	}
-}
-
-void CPU::add(uint8_t* reg, int val)
-{
-	AF.F.N = 0;
-	*reg += val;
-	if (((*reg & 0xF + (val & 0xF)) & 0x10) == 0x10)
-	{
-		AF.F.H = 1;
-	}
-	else
-	{
-		AF.F.H = 0;
-	}
-	if (*reg > 255)
-	{
-		*reg -= 256;
-		AF.F.C = 1;
-	}
-	else if (*reg < 0)
-	{
-		*reg += 256;
-		AF.F.C = 1;
-	}
-	else
-	{
-		AF.F.C = 0;
-	}
-	if (*reg == 0)
-	{
-		AF.F.Z = 1;
-	}
-	else
-	{
-		AF.F.Z = 0;
 	}
 }
 

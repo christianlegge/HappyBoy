@@ -138,6 +138,8 @@ private:
 
 	template <class T, AddressingMode>
 	T& getOperand();
+	template <class T, WritebackMode>
+	T& getWriteTarget();
 
 	template <class T, WritebackMode>
 	void writeValue(T value);
@@ -196,7 +198,6 @@ private:
 	void incMem(uint16_t addr);
 	void dec(uint8_t* reg);
 	void decMem(uint16_t addr);
-	void add(uint8_t* reg, int val);
 	void sub(uint8_t* reg, int val);
 	void cp(int val);
 	void cb(uint8_t opcode);
