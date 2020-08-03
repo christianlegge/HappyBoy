@@ -121,9 +121,11 @@ private:
 	int cyclesRemaining = 0;
 
 	std::vector<uint8_t> instruction_cycles;
+	std::vector<uint8_t> cb_instruction_cycles;
 	std::vector<Instruction> glossary;
 	std::vector<Instruction> cb_glossary;
 	std::vector<void (CPU::*)()> opcode_funcs;
+	std::vector<void (CPU::*)()> cb_opcode_funcs;
 	std::vector<std::string> names;
 
 
