@@ -242,7 +242,7 @@ void CPU::RLA() {
 
 template <ConditionMode conditionMode, AddressingMode readMode>
 void CPU::JR() {
-	if (getConditional<ConditionMode>()) {
+	if (getConditional<conditionMode>()) {
 		PC += (int8_t)getOperand<readMode>();
 	}
 }
@@ -482,7 +482,7 @@ CPU::CPU(std::shared_ptr<Bus> bus) : bus(bus)
 {
 	opcode_funcs = {
  /*0x*/	&CPU::NOP, &CPU::LD<AddressingMode::RegisterBC, AddressingMode::Immediate16>, &CPU::LD<AddressingMode::AddressBC, AddressingMode::RegisterA>, &CPU::INC<AddressingMode::RegisterBC>, &CPU::INC<AddressingMode::RegisterB>, &CPU::DEC<AddressingMode::RegisterB>, &CPU::LD<AddressingMode::RegisterB, AddressingMode::Immediate8>, &CPU::RLCA, &CPU::LD<AddressingMode::Absolute16, AddressingMode::RegisterSP>, &CPU::ADD<AddressingMode::RegisterHL, AddressingMode::RegisterBC>, &CPU::LD<AddressingMode::RegisterA, AddressingMode::AbsoluteBC>, &CPU::DEC<AddressingMode::RegisterBC>, &CPU::INC<AddressingMode::RegisterC>, &CPU::DEC<AddressingMode::RegisterC>, &CPU::LD<AddressingMode::RegisterC, AddressingMode::Immediate8>, &CPU::RRCA,
-		&CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP,
+		&CPU::STOP, &CPU::LD<AddressingMode::RegisterDE, AddressingMode::Immediate16>, &CPU::LD<AddressingMode::AbsoluteDE, AddressingMode::RegisterA>, &CPU::INC<AddressingMode::RegisterDE>, &CPU::INC<AddressingMode::RegisterD>, &CPU::DEC<AddressingMode::RegisterD>, &CPU::LD<AddressingMode::RegisterD, AddressingMode::Immediate8>, &CPU::RLA, &CPU::JR<ConditionMode::Always, AddressingMode::Immediate8>, &CPU::ADD<AddressingMode::RegisterHL, AddressingMode::RegisterDE>, &CPU::LD<AddressingMode::RegisterA, AddressingMode::AbsoluteDE>, &CPU::DEC<AddressingMode::RegisterDE>, &CPU::INC<AddressingMode::RegisterE>, &CPU::DEC<AddressingMode::RegisterE>, &CPU::LD<AddressingMode::RegisterE, AddressingMode::Immediate8>, &CPU::RRA,
 		&CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP,
 		&CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP,
 		&CPU::LD<AddressingMode::RegisterB, AddressingMode::RegisterB>, &CPU::LD<AddressingMode::RegisterB, AddressingMode::RegisterC>, &CPU::LD<AddressingMode::RegisterB, AddressingMode::RegisterD>, &CPU::LD<AddressingMode::RegisterB, AddressingMode::RegisterE>, &CPU::LD<AddressingMode::RegisterB, AddressingMode::RegisterH>, &CPU::LD<AddressingMode::RegisterB, AddressingMode::RegisterL>, &CPU::LD<AddressingMode::RegisterB, AddressingMode::AddressHL>, &CPU::LD<AddressingMode::RegisterB, AddressingMode::RegisterA>, &CPU::LD<AddressingMode::RegisterC, AddressingMode::RegisterB>, &CPU::LD<AddressingMode::RegisterC, AddressingMode::RegisterC>, &CPU::LD<AddressingMode::RegisterC, AddressingMode::RegisterD>, &CPU::LD<AddressingMode::RegisterC, AddressingMode::RegisterE>, &CPU::LD<AddressingMode::RegisterC, AddressingMode::RegisterH>, &CPU::LD<AddressingMode::RegisterC, AddressingMode::RegisterL>, &CPU::LD<AddressingMode::RegisterC, AddressingMode::AddressHL>, &CPU::LD<AddressingMode::RegisterC, AddressingMode::RegisterA>,
