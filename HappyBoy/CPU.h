@@ -134,9 +134,9 @@ private:
 	void writeBus(uint16_t addr, uint8_t data);
 
 	template <AddressingMode, class T = uint8_t>
-	T& getOperand();
+	T getOperand();
 	template <AddressingMode, class T = uint8_t>
-	T& getWriteTarget();
+	T getWriteTarget();
 	template <AddressingMode, class T = uint8_t>
 	void writeValue(T value);
 	template <ConditionMode>
@@ -192,6 +192,7 @@ private:
 	void RETI();
 	void DI();
 	void EI();
+	void undefined();
 
 	void cb(uint8_t opcode);
 
