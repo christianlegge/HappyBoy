@@ -207,6 +207,10 @@ void CPU::RRCA() {
 	AF.F.reg &= 0x80;
 }
 
+void CPU::STOP() {
+	stopped = true;
+}
+
 void CPU::RLA() {
 	bool tmp = AF.F.C;
 	AF.F.C = AF.A & 0x80;
@@ -229,22 +233,22 @@ void CPU::LD() {
 }
 
 void CPU::HALT() {
-	throw std::logic_error{ "Not implemented" };
+	halted = true;
 }
 
-template <WritebackMode writeMode, AddressingMode readMode>
+template <AddressingMode readMode>
 void CPU::ADC() {
 	AF.F.N = 0;
 	AF.A += getOperand<readMode>() + AF.F.C;
 }
 
-template <WritebackMode writeMode, AddressingMode readMode>
+template <AddressingMode readMode>
 void CPU::SUB() {
 	AF.F.N = 1;
 	AF.A -= getOperand<readMode>();
 }
 
-template <WritebackMode writeMode, AddressingMode readMode>
+template <AddressingMode readMode>
 void CPU::SBC() {
 	AF.F.N = 1;
 	AF.A -= getOperand<readMode>() + AF.F.C;
@@ -569,7 +573,7 @@ void CPU::interrupt(uint16_t addr)
 
 void CPU::reset()
 {
-	stop = false;
+	stopped = false;
 	PC = 0x0000;
 	writeBus(0xFF50, 0);
 }
@@ -702,7 +706,7 @@ void CPU::execute(Instruction& ins)
 		AF.A = AF.A | (AF.F.C << 7);
 		break;
 	case 16:
-		stop = true;
+		stopped = true;
 		break;
 	case 17:
 		DE.E = ins.param16 & 0xFF;

@@ -63,7 +63,8 @@ public:
 		};
 		uint8_t reg = 0x00;
 	} IE;
-	bool stop = false;
+	bool halted = false;
+	bool stopped = false;
 	uint16_t counter = 0x0000;
 	uint8_t TIMA;
 	uint8_t TMA;
