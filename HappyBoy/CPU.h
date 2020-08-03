@@ -144,9 +144,9 @@ private:
 	void NOP();
 	template <AddressingMode, AddressingMode, class wordlength = uint8_t>
 	void LD();
-	template <AddressingMode>
+	template <AddressingMode, class wordlength = uint8_t>
 	void INC();
-	template <AddressingMode>
+	template <AddressingMode, class wordlength = uint8_t>
 	void DEC();
 	void RLCA();
 	template <AddressingMode, AddressingMode>
