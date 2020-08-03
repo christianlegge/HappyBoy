@@ -500,9 +500,10 @@ void CPU::JP() {
 template <ConditionMode conditionMode, AddressingMode readMode>
 void CPU::CALL() {
 	if (getConditional<conditionMode>()) {
+		uint16_t new_pc = getOperand<readMode, uint16_t>();
 		writeBus(--SP, PC >> 8);
 		writeBus(--SP, PC & 0xFF);
-		PC = getOperand<readMode, uint16_t>();
+		PC = new_pc;
 		cyclesRemaining += 12;
 	}
 	else {
@@ -808,7 +809,6 @@ CPU::CPU(std::shared_ptr<Bus> bus) : bus(bus)
 }
 
 uint16_t CPU::tick() {
-
 	if (ime) {
 		uint16_t addr = 0;
 		if (IF.vblank && IE.vblank) {

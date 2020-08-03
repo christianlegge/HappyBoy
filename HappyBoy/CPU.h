@@ -128,7 +128,6 @@ private:
 	std::vector<void (CPU::*)()> cb_opcode_funcs;
 	std::vector<std::string> names;
 
-
 	uint8_t fetch();
 	Instruction fetch_debug();
 	uint8_t readBus(uint16_t addr);
