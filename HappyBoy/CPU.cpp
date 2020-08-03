@@ -4,8 +4,8 @@
 
 #include "CPU.h"
 
-template<AddressingMode mode>
-uint8_t& CPU::getOperand()
+template<class T, AddressingMode mode>
+T& CPU::getOperand()
 {
 	switch (mode) {
 	case AddressingMode::RegisterA:
@@ -37,8 +37,8 @@ uint8_t& CPU::getOperand()
 	}
 }
 
-template<WritebackMode mode>
-void CPU::writeValue(uint8_t value)
+template<class T, WritebackMode mode>
+void CPU::writeValue(T value)
 {
 	switch (mode) {
 	case WritebackMode::RegisterA:
@@ -77,7 +77,7 @@ void CPU::NOP() {
 template <AddressingMode readMode>
 void CPU::INC()
 {
-	uint8_t op = getOperand<readMode>();
+	uint8_t op = getOperand<uint8_t, readMode>();
 	op++;
 	AF.F.N = 0;
 	if (op == 0)
@@ -101,7 +101,7 @@ void CPU::INC()
 template <AddressingMode readMode>
 void CPU::DEC()
 {
-	uint8_t op = getOperand<readMode>();
+	uint8_t op = getOperand<uint8_t, readMode>();
 	op--;
 	AF.F.N = 0;
 	if (op == 0)
@@ -124,7 +124,7 @@ void CPU::DEC()
 
 template <WritebackMode writeMode, AddressingMode readMode>
 void CPU::LD() {
-	writeValue<writeMode>(getOperand<readMode>());
+	writeValue<uint8_t, writeMode>(getOperand<uint8_t, readMode>());
 }
 
 void CPU::HALT() {

@@ -136,11 +136,11 @@ private:
 	uint8_t readBus(uint16_t addr);
 	void writeBus(uint16_t addr, uint8_t data);
 
-	template <AddressingMode>
-	uint8_t& getOperand();
+	template <class T, AddressingMode>
+	T& getOperand();
 
-	template <WritebackMode>
-	void writeValue(uint8_t value);
+	template <class T, WritebackMode>
+	void writeValue(T value);
 
 	void NOP();
 	template <WritebackMode, AddressingMode>
