@@ -141,7 +141,7 @@ private:
 	bool getConditional();
 
 	void NOP();
-	template <AddressingMode, AddressingMode>
+	template <AddressingMode, AddressingMode, class wordlength = uint8_t>
 	void LD();
 	template <AddressingMode>
 	void INC();
