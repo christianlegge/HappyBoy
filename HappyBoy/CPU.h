@@ -124,13 +124,12 @@ private:
 	std::vector<uint8_t> instruction_cycles;
 	std::vector<Instruction> glossary;
 	std::vector<Instruction> cb_glossary;
-	std::vector<void(CPU::*)()> opcode_funcs;
+	std::vector<void (CPU::*)()> opcode_funcs;
 	std::vector<std::string> names;
-	Instruction current_instruction;
-	Instruction debug_instruction;
 
 
-	void fetch(bool debug = false);
+	uint8_t fetch();
+	Instruction fetch_debug();
 	void execute(Instruction& ins);
 	uint8_t readBus(uint16_t addr);
 	void writeBus(uint16_t addr, uint8_t data);

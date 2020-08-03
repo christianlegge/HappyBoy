@@ -630,8 +630,7 @@ uint16_t CPU::tick() {
 	}
 
 	if (cyclesRemaining <= 0) {
-		fetch();
-		execute(current_instruction);
+		(this->*opcode_funcs[fetch()])();
 	}
 
 	cyclesRemaining--;
@@ -676,8 +675,8 @@ std::vector<std::string> CPU::getDisassembly(int lines)
 	uint16_t pc_tmp = PC;
 	int cycles_tmp = cyclesRemaining;
 	for (int i = 0; i < lines; i++) {
-		fetch(true);
-		std::string name = names[debug_instruction.opcode == 0xCB ? (debug_instruction.param8 + 0x100) : debug_instruction.opcode];
+		Instruction ins = fetch_debug();
+		std::string name = names[ins.opcode == 0xCB ? (ins.param8 + 0x100) : ins.opcode];
 		size_t d8pos = name.find("d8");
 		size_t r8pos = name.find("r8");
 		size_t a8pos = name.find("a8");
@@ -685,32 +684,32 @@ std::vector<std::string> CPU::getDisassembly(int lines)
 		size_t d16pos = name.find("d16");
 		if (d8pos != std::string::npos) {
 			std::stringstream s;
-			s << "$" << std::setfill('0') << std::setw(2) << std::hex << (unsigned int)debug_instruction.param8;
+			s << "$" << std::setfill('0') << std::setw(2) << std::hex << (unsigned int)ins.param8;
 			name.replace(d8pos, 2, s.str());
 		}
 		if (r8pos != std::string::npos) {
 			std::stringstream s;
-			s << "$" << std::setfill('0') << std::setw(4) << std::hex << (int8_t)debug_instruction.param8 + PC;
+			s << "$" << std::setfill('0') << std::setw(4) << std::hex << (int8_t)ins.param8 + PC;
 			name.replace(r8pos, 2, s.str());
 		}
 		if (a8pos != std::string::npos) {
 			std::stringstream s;
-			s << "$" << std::setfill('0') << std::setw(4) << std::hex << (0xFF00 + debug_instruction.param8);
+			s << "$" << std::setfill('0') << std::setw(4) << std::hex << (0xFF00 + ins.param8);
 			name.replace(a8pos, 2, s.str());
 		}
 		if (a16pos != std::string::npos) {
 			std::stringstream s;
-			s << "$" << std::setfill('0') << std::setw(4) << std::hex << debug_instruction.param16;
+			s << "$" << std::setfill('0') << std::setw(4) << std::hex << ins.param16;
 			name.replace(a16pos, 3, s.str());
 		}
 		if (d16pos != std::string::npos) {
 			std::stringstream s;
-			s << "$" << std::setfill('0') << std::setw(4) << std::hex << debug_instruction.param16;
+			s << "$" << std::setfill('0') << std::setw(4) << std::hex << ins.param16;
 			name.replace(d16pos, 3, s.str());
 		}
 
 		std::stringstream s;
-		s << "$" << std::setfill('0') << std::setw(4) << std::hex << debug_instruction.addr << ": " << name;
+		s << "$" << std::setfill('0') << std::setw(4) << std::hex << ins.addr << ": " << name;
 		disasm.push_back(s.str());
 	}
 	PC = pc_tmp;
@@ -772,35 +771,31 @@ void CPU::reset()
 	writeBus(0xFF50, 0);
 }
 
-void CPU::fetch(bool debug) {
+uint8_t CPU::fetch() {
+	return bus->read(SP++);
+}
+
+Instruction CPU::fetch_debug() {
 	uint16_t addr = PC;
 	uint8_t opcode = readBus(PC++);
-	Instruction* i;
-	if (debug) {
-		i = &debug_instruction;
-	}
-	else {
-		i = &current_instruction;
-	}
-	*i = glossary[opcode];
+	Instruction i;
+	i = glossary[opcode];
 	if (opcode == 0xCB) {
 		uint8_t cb_opcode = readBus(PC++);
-		*i = cb_glossary[cb_opcode];
-		i->param8 = cb_opcode;
+		i = cb_glossary[cb_opcode];
+		i.param8 = cb_opcode;
 	}
 	else {
-		if (i->bytes == 2) {
-			i->param8 = readBus(PC++);
+		if (i.bytes == 2) {
+			i.param8 = readBus(PC++);
 		}
-		else if (i->bytes == 3) {
-			i->param16 = readBus(PC++) | (readBus(PC++) << 8);
+		else if (i.bytes == 3) {
+			i.param16 = readBus(PC++) | (readBus(PC++) << 8);
 		}
 	}
-	i->opcode = opcode;
-	i->addr = addr;
-	if (!debug) {
-		cyclesRemaining = i->cycles - 1;
-	}
+	i.opcode = opcode;
+	i.addr = addr;
+	return i;
 }
 
 void CPU::execute(Instruction& ins)
