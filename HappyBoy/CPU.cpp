@@ -77,6 +77,16 @@ T CPU::getOperand()
 	case AddressingMode::ImmediateHighPage:
 		return readBus(0xFF00 | fetch());
 		break;
+	case AddressingMode::StackPlusImmediate:
+	{
+		uint16_t new_sp = SP + fetch();
+		AF.F.C = SP > new_sp;
+		AF.F.H = (new_sp & 0xF000) > (SP & 0xF000) || AF.F.C;
+		AF.F.Z = 0;
+		AF.F.N = 0;
+		return new_sp;
+	}
+		break;
 	default:
 		throw std::logic_error{ "Not implemented" };
 	}
@@ -191,22 +201,24 @@ void CPU::INC()
 {
 	wordlength op = getOperand<mode, wordlength>();
 	writeValue<mode, wordlength>(++op);
-	AF.F.N = 0;
-	if (op == 0)
-	{
-		AF.F.Z = 1;
-	}
-	else
-	{
-		AF.F.Z = 0;
-	}
-	if ((op & 0b00001111) == 0)
-	{
-		AF.F.H = 1;
-	}
-	else
-	{
-		AF.F.H = 0;
+	if (!(mode == AddressingMode::RegisterBC || mode == AddressingMode::RegisterDE || mode == AddressingMode::RegisterHL || mode == AddressingMode::RegisterSP)) {
+		AF.F.N = 0;
+		if (op == 0)
+		{
+			AF.F.Z = 1;
+		}
+		else
+		{
+			AF.F.Z = 0;
+		}
+		if ((op & 0b00001111) == 0)
+		{
+			AF.F.H = 1;
+		}
+		else
+		{
+			AF.F.H = 0;
+		}
 	}
 }
 
@@ -214,23 +226,25 @@ template <AddressingMode mode, class wordlength>
 void CPU::DEC()
 {
 	wordlength op = getOperand<mode, wordlength>();
-	writeValue<mode, wordlength>(--op);
-	AF.F.N = 0;
-	if (op == 0)
-	{
-		AF.F.Z = 1;
-	}
-	else
-	{
-		AF.F.Z = 0;
-	}
-	if ((op & 0b00001111) == 0b1111)
-	{
-		AF.F.H = 1;
-	}
-	else
-	{
-		AF.F.H = 0;
+	writeValue<mode, wordlength>(--op);	
+	if (!(mode == AddressingMode::RegisterBC || mode == AddressingMode::RegisterDE || mode == AddressingMode::RegisterHL || mode == AddressingMode::RegisterSP)) {
+		AF.F.N = 0;
+		if (op == 0)
+		{
+			AF.F.Z = 1;
+		}
+		else
+		{
+			AF.F.Z = 0;
+		}
+		if ((op & 0b00001111) == 0b1111)
+		{
+			AF.F.H = 1;
+		}
+		else
+		{
+			AF.F.H = 0;
+		}
 	}
 }
 
@@ -249,7 +263,12 @@ void CPU::ADD()
 	wordlength new_value = target + getOperand<readMode, wordlength>();
 	AF.F.C = new_value < target;
 	AF.F.H = ((new_value & 0xF0) > (target & 0xF0)) | AF.F.C;
-	AF.F.Z = !new_value;
+	if (writeMode == AddressingMode::RegisterSP) {
+		AF.F.Z = 0;
+	}
+	else if (writeMode != AddressingMode::RegisterHL) {
+		AF.F.Z = !new_value;
+	}
 	writeValue<writeMode, wordlength>(new_value);
 }
 
@@ -826,6 +845,9 @@ uint16_t CPU::tick() {
 
 	if (cyclesRemaining <= 0) {
 		uint8_t opcode = fetch();
+		if (opcode == 0x33 || opcode == 0x3B || opcode == 0x39 || opcode == 0xE8 || opcode == 0xF8) {
+			int x = 0;
+		}
 		if (opcode == 0xCB) {
 			uint8_t cb_opcode = fetch();
 			(this->*cb_opcode_funcs[cb_opcode])();
