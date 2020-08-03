@@ -447,13 +447,13 @@ void CPU::CP() {
 	}
 	else if (AF.A < operand) {
 		AF.F.Z = 0;
-		AF.F.H = 1;
-		AF.F.C = 0;
+		AF.F.H = 0;
+		AF.F.C = 1;
 	}
 	else if (AF.A > operand) {
 		AF.F.Z = 0;
-		AF.F.H = 0;
-		AF.F.C = 1;
+		AF.F.H = 1;
+		AF.F.C = 0;
 	}
 	AF.F.N = 1;
 }
