@@ -20,7 +20,7 @@ enum class AddressingMode {
 	RegisterAF, RegisterBC, RegisterDE, RegisterHL, RegisterSP,
 	AddressAF, AddressBC, AddressDE, AddressHL,
 	Immediate8, Immediate16, ImmediateHighPage,
-	Absolute8, Absolute16, AbsoluteBC, AbsoluteDE, AbsoluteHL, AbsoluteHLI, AbsoluteHLD
+	Absolute8, Absolute16, AbsoluteBC, AbsoluteDE, AbsoluteHL, AbsoluteHLI, AbsoluteHLD, AbsoluteHighPageC
 };
 
 enum class ConditionMode {
