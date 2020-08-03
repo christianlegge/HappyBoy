@@ -380,14 +380,20 @@ void CPU::DAA() {
 
 void CPU::CPL() {
 	AF.A = ~AF.A;
+	AF.F.N = 1;
+	AF.F.H = 1;
 }
 
 void CPU::SCF() {
 	AF.F.C = 1;
+	AF.F.N = 0;
+	AF.F.H = 0;
 }
 
 void CPU::CCF() {
 	AF.F.C = !AF.F.C;
+	AF.F.N = 0;
+	AF.F.H = 0;
 }
 
 template <AddressingMode writeMode, AddressingMode readMode, class wordlength>
