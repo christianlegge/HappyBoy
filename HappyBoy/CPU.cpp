@@ -338,6 +338,13 @@ void CPU::RET() {
 	}
 }
 
+template <WritebackMode writeMode>
+void CPU::POP() {
+	uint16_t operand = readBus(--SP);
+	operand |= readBus(--SP);
+	writeValue<uint16_t, writeMode>(operand);
+}
+
 template <ConditionMode conditionMode, AddressingMode readMode>
 void CPU::JP() {
 	if (getConditional<ConditionMode>()) {
@@ -352,6 +359,13 @@ void CPU::CALL() {
 		writeBus(--SP, PC & 0xFF);
 		PC = getOperand<uint16_t, readMode>();
 	}
+}
+
+template <AddressingMode readMode>
+void CPU::PUSH() {
+	uint16_t operand = getOperand<uint16_t, readMode>();
+	writeBus(SP++, operand & 0xFF);
+	writeBus(SP++, operand >> 8);
 }
 
 template <uint16_t address>

@@ -187,13 +187,13 @@ private:
 	void CP();
 	template <ConditionMode>
 	void RET();
-	template <WritebackMode, AddressingMode>
+	template <WritebackMode>
 	void POP();
 	template <ConditionMode, AddressingMode>
 	void JP();
 	template <ConditionMode, AddressingMode>
 	void CALL();
-	template <WritebackMode, AddressingMode>
+	template <AddressingMode>
 	void PUSH();
 	template <uint16_t>
 	void RST();
