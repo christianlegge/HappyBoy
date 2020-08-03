@@ -255,6 +255,86 @@ void CPU::RRA() {
 	AF.F.reg &= 0x80;
 }
 
+void CPU::DAA() {
+	if (AF.F.N) {
+		if (AF.F.C) {
+			if (AF.F.H) {
+				AF.A += 0x9A;
+			}
+			else {
+				AF.A += 0xA0;
+			}
+		}
+		else {
+			if (AF.F.H) {
+				AF.A += 0xFA;
+			}
+			else {
+				AF.A += 0x00;
+			}
+		}
+	}
+	else {
+		if (AF.F.C) {
+			if ((AF.A >> 4) < 0x03) {
+				if ((AF.A & 0x0F) < 0x0A) {
+					AF.A += 0x60;
+				}
+				else {
+					AF.A += 0x66;
+				}
+			}
+			else {
+				AF.A += 0x66;
+			}
+		}
+		else {
+			if (AF.F.H) {
+				if ((AF.A >> 4) < 0x0A) {
+					AF.A += 0x06;
+				}
+				else {
+					AF.F.C = true;
+					AF.A += 0x66;
+				}
+			}
+			else {
+				if ((AF.A & 0x0F) < 0x0A) {
+					if ((AF.A >> 4) < 0x0A) {
+						AF.A += 0x00;
+					}
+					else {
+						AF.F.C = true;
+						AF.A += 0x60;
+					}
+				}
+				else {
+					if ((AF.A >> 4) < 0x09) {
+						AF.A += 0x06;
+					}
+					else {
+						AF.F.C = true;
+						AF.A += 0x66;
+					}
+				}
+			}
+		}
+	}
+	AF.F.Z = !AF.A;
+}
+
+void CPU::CPL() {
+
+}
+
+void CPU::SCF() {
+
+}
+
+void CPU::CCF() {
+
+}
+
 template <WritebackMode writeMode, AddressingMode readMode>
 void CPU::LD() {
 	writeValue<uint8_t, writeMode>(getOperand<uint8_t, readMode>());
@@ -917,8 +997,6 @@ void CPU::execute(Instruction& ins)
 		HL.H = ins.param8;
 		break;
 	case 39:
-		AF.A += daa();
-		AF.F.Z = (AF.A == 0);
 		break;
 	case 40:
 		if (AF.F.Z == 1)
@@ -2130,73 +2208,5 @@ void CPU::cb(uint8_t opcode)
 	case 7:
 		AF.A = data;
 		break;
-	}
-}
-
-uint8_t CPU::daa()
-{
-	if (AF.F.N) {
-		if (AF.F.C) {
-			if (AF.F.H) {
-				return 0x9A;
-			}
-			else {
-				return 0xA0;
-			}
-		}
-		else {
-			if (AF.F.H) {
-				return 0xFA;
-			}
-			else {
-				return 0x00;
-			}
-		}
-	}
-	else {
-		if (AF.F.C) {
-			if ((AF.A >> 4) < 0x03) {
-				if ((AF.A & 0x0F) < 0x0A) {
-					return 0x60;
-				}
-				else {
-					return 0x66;
-				}
-			}
-			else {
-				return 0x66;
-			}
-		}
-		else {
-			if (AF.F.H) {
-				if ((AF.A >> 4) < 0x0A) {
-					return 0x06;
-				}
-				else {
-					AF.F.C = true;
-					return 0x66;
-				}
-			}
-			else {
-				if ((AF.A & 0x0F) < 0x0A) {
-					if ((AF.A >> 4) < 0x0A) {
-						return 0x00;
-					}
-					else {
-						AF.F.C = true;
-						return 0x60;
-					}
-				}
-				else {
-					if ((AF.A >> 4) < 0x09) {
-						return 0x06;
-					}
-					else {
-						AF.F.C = true;
-						return 0x66;
-					}
-				}
-			}
-		}
 	}
 }
