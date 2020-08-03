@@ -296,6 +296,7 @@ template <ConditionMode conditionMode, AddressingMode readMode>
 void CPU::JR() {
 	if (getConditional<conditionMode>()) {
 		PC += (int8_t)getOperand<readMode>();
+		cyclesRemaining += 4;
 	}
 }
 
@@ -471,6 +472,7 @@ void CPU::RET() {
 	if (getConditional<mode>()) {
 		PC = readBus(SP++);
 		PC |= readBus(SP++) << 8;
+		cyclesRemaining += 12;
 	}
 }
 
@@ -485,6 +487,7 @@ template <ConditionMode conditionMode, AddressingMode readMode>
 void CPU::JP() {
 	if (getConditional<conditionMode>()) {
 		PC = getOperand<readMode, uint16_t>();
+		cyclesRemaining += 4;
 	}
 }
 
@@ -494,6 +497,7 @@ void CPU::CALL() {
 		writeBus(--SP, PC >> 8);
 		writeBus(--SP, PC & 0xFF);
 		PC = getOperand<readMode, uint16_t>();
+		cyclesRemaining += 12;
 	}
 }
 
