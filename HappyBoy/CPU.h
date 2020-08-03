@@ -195,7 +195,7 @@ private:
 	void CALL();
 	template <WritebackMode, AddressingMode>
 	void PUSH();
-	template <WritebackMode, AddressingMode>
+	template <uint16_t>
 	void RST();
 	void RETI();
 	void DI();

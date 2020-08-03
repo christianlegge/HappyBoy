@@ -354,6 +354,13 @@ void CPU::CALL() {
 	}
 }
 
+template <uint16_t address>
+void CPU::RST() {
+	writeBus(--SP, PC >> 8);
+	writeBus(--SP, PC & 0xFF);
+	PC = address;
+}
+
 void CPU::RETI() {
 	PC = readBus(SP++);
 	PC |= readBus(SP++) << 8;
