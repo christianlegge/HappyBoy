@@ -31,6 +31,10 @@ enum class WritebackMode {
 	Absolute8, Absolute16, AbsoluteHL
 };
 
+enum class ConditionMode {
+	Always, NZ, Z, NC, C
+};
+
 class CPU
 {
 public:
@@ -141,9 +145,10 @@ private:
 	T& getOperand();
 	template <class T, WritebackMode>
 	T& getWriteTarget();
-
 	template <class T, WritebackMode>
 	void writeValue(T value);
+	template <ConditionMode>
+	bool getConditional();
 
 	void NOP();
 	template <WritebackMode, AddressingMode>
@@ -158,7 +163,7 @@ private:
 	void RRCA();
 	void STOP();
 	void RLA();
-	template <WritebackMode, AddressingMode>
+	template <ConditionMode, AddressingMode>
 	void JR();
 	void RRA();
 	void DAA();
@@ -184,9 +189,9 @@ private:
 	void RET();
 	template <WritebackMode, AddressingMode>
 	void POP();
-	template <WritebackMode, AddressingMode>
+	template <ConditionMode, AddressingMode>
 	void JP();
-	template <WritebackMode, AddressingMode>
+	template <ConditionMode, AddressingMode>
 	void CALL();
 	template <WritebackMode, AddressingMode>
 	void PUSH();

@@ -102,6 +102,27 @@ void CPU::writeValue(T value)
 	}
 }
 
+template <ConditionMode mode>
+bool CPU::getConditional() {
+	switch (mode) {
+	case ConditionMode::Always:
+		return true;
+		break;
+	case ConditionMode::NZ:
+		return !AF.F.Z;
+		break;
+	case ConditionMode::Z:
+		return AF.F.Z;
+		break;
+	case ConditionMode::NC:
+		return !AF.F.C;
+		break;
+	case ConditionMode::C:
+		return AF.F.C;
+		break;
+	}
+}
+
 void CPU::NOP() {
 	return;
 }
@@ -219,6 +240,13 @@ void CPU::RLA() {
 	AF.F.reg &= 0x80;
 }
 
+template <ConditionMode conditionMode, AddressingMode readMode>
+void CPU::JR() {
+	if (getConditional<ConditionMode>()) {
+		PC += (int8_t)getOperand<readMode>();
+	}
+}
+
 void CPU::RRA() {
 	bool tmp = AF.F.C;
 	AF.F.C = AF.A & 0x01;
@@ -300,6 +328,22 @@ void CPU::CP() {
 		AF.F.C = 1;
 	}
 	AF.F.N = 1;
+}
+
+template <ConditionMode conditionMode, AddressingMode readMode>
+void CPU::JP() {
+	if (getConditional<ConditionMode>()) {
+		PC = getOperand<uint16_t, readMode>();
+	}
+}
+
+template <ConditionMode conditionMode, AddressingMode readMode>
+void CPU::CALL() {
+	if (getConditional<ConditionMode>()) {
+		write(--sp, PC >> 8);
+		write(--sp, PC & 0xFF);
+		PC = getOperand<uint16_t, readMode>();
+	}
 }
 
 uint8_t CPU::readBus(uint16_t addr)
