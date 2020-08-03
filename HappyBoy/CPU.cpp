@@ -74,7 +74,7 @@ void CPU::NOP() {
 	return;
 }
 
-template <WritebackMode writeMode, AddressingMode readMode>
+template <AddressingMode readMode>
 void CPU::INC()
 {
 	uint8_t op = getOperand<readMode>();
@@ -89,6 +89,30 @@ void CPU::INC()
 		AF.F.Z = 0;
 	}
 	if ((op & 0b00001111) == 0)
+	{
+		AF.F.H = 1;
+	}
+	else
+	{
+		AF.F.H = 0;
+	}
+}
+
+template <AddressingMode readMode>
+void CPU::DEC()
+{
+	uint8_t op = getOperand<readMode>();
+	op--;
+	AF.F.N = 0;
+	if (op == 0)
+	{
+		AF.F.Z = 1;
+	}
+	else
+	{
+		AF.F.Z = 0;
+	}
+	if ((op & 0b00001111) == 0b1111)
 	{
 		AF.F.H = 1;
 	}
@@ -120,7 +144,7 @@ void CPU::writeBus(uint16_t addr, uint8_t data)
 CPU::CPU(std::shared_ptr<Bus> bus) : bus(bus)
 {
 	opcode_funcs = {
- /*0x*/	&CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::INC<WritebackMode::RegisterA, AddressingMode::RegisterBC>, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP,
+ /*0x*/	&CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::INC<AddressingMode::RegisterBC>, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP,
 		&CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP,
 		&CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP,
 		&CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP,

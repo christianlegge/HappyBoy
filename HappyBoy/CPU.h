@@ -145,9 +145,9 @@ private:
 	void NOP();
 	template <WritebackMode, AddressingMode>
 	void LD();
-	template <WritebackMode, AddressingMode>
+	template <AddressingMode>
 	void INC();
-	template <WritebackMode, AddressingMode>
+	template <AddressingMode>
 	void DEC();
 	void RLCA();
 	template <WritebackMode, AddressingMode>
