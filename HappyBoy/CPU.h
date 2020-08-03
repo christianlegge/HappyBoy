@@ -148,7 +148,7 @@ private:
 	template <AddressingMode, class wordlength = uint8_t>
 	void DEC();
 	void RLCA();
-	template <AddressingMode, AddressingMode>
+	template <AddressingMode, AddressingMode, class wordlength = uint8_t>
 	void ADD();
 	void RRCA();
 	void STOP();
@@ -161,11 +161,11 @@ private:
 	void SCF();
 	void CCF();
 	void HALT();
-	template <AddressingMode, AddressingMode>
+	template <AddressingMode>
 	void ADC();
 	template <AddressingMode>
 	void SUB();
-	template <AddressingMode, AddressingMode>
+	template <AddressingMode>
 	void SBC();
 	template <AddressingMode>
 	void AND();
