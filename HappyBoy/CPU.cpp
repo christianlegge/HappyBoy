@@ -330,6 +330,14 @@ void CPU::CP() {
 	AF.F.N = 1;
 }
 
+template <ConditionMode mode>
+void CPU::RET() {
+	if (getConditional<mode>()) {
+		PC = readBus(SP++);
+		PC |= readBus(SP++) << 8;
+	}
+}
+
 template <ConditionMode conditionMode, AddressingMode readMode>
 void CPU::JP() {
 	if (getConditional<ConditionMode>()) {
@@ -340,10 +348,15 @@ void CPU::JP() {
 template <ConditionMode conditionMode, AddressingMode readMode>
 void CPU::CALL() {
 	if (getConditional<ConditionMode>()) {
-		write(--sp, PC >> 8);
-		write(--sp, PC & 0xFF);
+		writeBus(--SP, PC >> 8);
+		writeBus(--SP, PC & 0xFF);
 		PC = getOperand<uint16_t, readMode>();
 	}
+}
+
+void CPU::RETI() {
+	PC = readBus(SP++);
+	PC |= readBus(SP++) << 8;
 }
 
 uint8_t CPU::readBus(uint16_t addr)

@@ -185,7 +185,7 @@ private:
 	void OR();
 	template <AddressingMode>
 	void CP();
-	template <WritebackMode, AddressingMode>
+	template <ConditionMode>
 	void RET();
 	template <WritebackMode, AddressingMode>
 	void POP();
