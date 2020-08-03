@@ -507,6 +507,25 @@ CPU::CPU(std::shared_ptr<Bus> bus) : bus(bus)
 		&CPU::LD<AddressingMode::RegisterA, AddressingMode::ImmediateHighPage>, &CPU::POP<AddressingMode::RegisterAF>, &CPU::LD<AddressingMode::RegisterA, AddressingMode::AbsoluteHighPageC>, &CPU::DI, &CPU::undefined, &CPU::PUSH<AddressingMode::RegisterAF>, &CPU::OR<AddressingMode::Immediate8>, &CPU::RST<0x30>, &CPU::LD<AddressingMode::RegisterHL, AddressingMode::StackPlusImmediate>, &CPU::LD<AddressingMode::RegisterSP, AddressingMode::RegisterHL>, &CPU::LD<AddressingMode::RegisterA, AddressingMode::Absolute16>, &CPU::EI, &CPU::undefined, &CPU::undefined, &CPU::CP<AddressingMode::Immediate8>, &CPU::RST<0x38>,
 	};
 
+	instruction_cycles = {
+		4, 12, 8, 8, 4, 4, 8, 4, 20, 8, 8, 8, 4, 4, 8, 4,
+		4, 12, 8, 8, 4, 4, 8, 4, 12, 8, 8, 8, 4, 4, 8, 4,
+		8, 12, 8, 8, 4, 4, 8, 4, 8, 8, 8, 8, 4, 4, 8, 4,
+		8, 12, 8, 8, 12, 12, 12, 4, 8, 8, 8, 8, 4, 4, 8, 4,
+		4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4,
+		4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4,
+		4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4,
+		8, 8, 8, 8, 8, 8, 4, 8, 4, 4, 4, 4, 4, 4, 8, 4,
+		4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4,
+		4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4,
+		4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4,
+		4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4,
+		8, 12, 12, 16, 12, 16, 8, 16, 8, 16, 12, 4, 12, 24, 8, 16,
+		8, 12, 12, 1, 12, 16, 8, 16, 8, 16, 12, 1, 12, 1, 8, 16,
+		12, 12, 8, 1, 1, 16, 8, 16, 16, 4, 16, 1, 1, 1, 8, 16,
+		12, 12, 8, 4, 1, 16, 8, 16, 12, 8, 16, 4, 1, 1, 8, 16,
+	};
+
 	glossary = {
 		{ 1, 4 }, { 3, 12 }, { 1, 8 }, { 1, 8 }, { 1, 4 }, { 1, 4 }, { 2, 8 }, { 1, 4 }, { 3, 20 }, { 1, 8 }, { 1, 8 }, { 1, 8 }, { 1, 4 }, { 1, 4 }, { 2, 8 }, { 1, 4 },
 		{ 2, 4 }, { 3, 12 }, { 1, 8 }, { 1, 8 }, { 1, 4 }, { 1, 4 }, { 2, 8 }, { 1, 4 }, { 2, 12 }, { 1, 8 }, { 1, 8 }, { 1, 8 }, { 1, 4 }, { 1, 4 }, { 2, 8 }, { 1, 4 },

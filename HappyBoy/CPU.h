@@ -121,6 +121,7 @@ private:
 	bool ime = false;
 	int cyclesRemaining = 0;
 
+	std::vector<uint8_t> instruction_cycles;
 	std::vector<Instruction> glossary;
 	std::vector<Instruction> cb_glossary;
 	std::vector<void(CPU::*)()> opcode_funcs;
