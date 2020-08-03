@@ -189,6 +189,28 @@ private:
 	void RETI();
 	void DI();
 	void EI();
+	template <AddressingMode>
+	void RLC();
+	template <AddressingMode>
+	void RRC();
+	template <AddressingMode>
+	void RL();
+	template <AddressingMode>
+	void RR();
+	template <AddressingMode>
+	void SLA();
+	template <AddressingMode>
+	void SRA();
+	template <AddressingMode>
+	void SWAP();
+	template <AddressingMode>
+	void SRL();
+	template <uint8_t, AddressingMode>
+	void BIT();
+	template <uint8_t, AddressingMode>
+	void RES();
+	template <uint8_t, AddressingMode>
+	void SET();
 	void undefined();
 
 	void cb(uint8_t opcode);

@@ -512,6 +512,110 @@ void CPU::EI() {
 	ime = true;
 }
 
+template <AddressingMode mode>
+void CPU::RLC() {
+	uint8_t data = getOperand<mode>();
+	uint8_t result = (data << 1) | ((data & 0x80) >> 7);
+	AF.F.N = 0;
+	AF.F.H = 0;
+	AF.F.C = data & 0x80;
+	writeValue<mode>(result);
+	AF.F.Z = !result;
+}
+
+template <AddressingMode mode>
+void CPU::RRC() {
+	uint8_t data = getOperand<mode>();
+	uint8_t result = (data >> 1) | ((data & 0x01) << 7);
+	AF.F.N = 0;
+	AF.F.H = 0;
+	AF.F.C = data & 0x01;
+	writeValue<mode>(result);
+	AF.F.Z = !result;
+}
+
+template <AddressingMode mode>
+void CPU::RL() {
+	uint8_t data = getOperand<mode>();
+	uint8_t result = (data << 1) | AF.F.C;
+	AF.F.N = 0;
+	AF.F.H = 0;
+	AF.F.C = data & 0x80;
+	writeValue<mode>(result);
+	AF.F.Z = !result;
+}
+
+template <AddressingMode mode>
+void CPU::RR() {
+	uint8_t data = getOperand<mode>();
+	uint8_t result = (data >> 1) | (AF.F.C << 7);
+	AF.F.N = 0;
+	AF.F.H = 0;
+	AF.F.C = data & 0x01;
+	writeValue<mode>(result);
+	AF.F.Z = !result;
+}
+
+template <AddressingMode mode>
+void CPU::SLA() {
+	uint8_t data = getOperand<mode>();
+	AF.F.N = 0;
+	AF.F.H = 0;
+	AF.F.C = data & 0x80;
+	writeValue<mode>(data << 1);
+	AF.F.Z = !(data << 1);
+}
+
+template <AddressingMode mode>
+void CPU::SRA() {
+	uint8_t data = getOperand<mode>();
+	uint8_t result = (data >> 1) | (data & 0x80);
+	AF.F.N = 0;
+	AF.F.H = 0;
+	AF.F.C = data & 0x01;
+	writeValue<mode>(result);
+	AF.F.Z = !result;
+}
+
+template <AddressingMode mode>
+void CPU::SWAP() {
+	uint8_t data = getOperand<mode>();
+	AF.F.N = 0;
+	AF.F.H = 0;
+	AF.F.C = 0;
+	writeValue<mode>((data << 4) | (data >> 4));
+	AF.F.Z = !data;
+}
+
+template <AddressingMode mode>
+void CPU::SRL() {
+	uint8_t data = getOperand<mode>();
+	AF.F.N = 0;
+	AF.F.H = 0;
+	AF.F.C = data & 0b00000001;
+	writeValue<mode>(data >> 1);
+	AF.F.Z = !(data & 0xFE);
+}
+
+template <uint8_t bit, AddressingMode mode>
+void CPU::BIT() {
+	AF.F.N = 0;
+	AF.F.H = 1;
+	AF.F.Z = !(getOperand<mode> & (1 << bit));
+}
+
+template <uint8_t bit, AddressingMode mode>
+void CPU::RES() {
+	uint8_t data = getOperand<mode>();
+	writeValue<mode>(data & ~(1 << bit));
+}
+
+template <uint8_t bit, AddressingMode mode>
+void CPU::SET() {
+	uint8_t data = getOperand<mode>();
+	writeValue<mode>(data | (1 << bit));
+}
+
 void CPU::undefined() {
 	throw std::logic_error{ "Undefined opcode" };
 }
