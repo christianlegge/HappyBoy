@@ -238,7 +238,7 @@ void CPU::RLCA() {
 	AF.F.C = AF.A & 0x80;
 	AF.A <<= 1;
 	AF.A |= AF.F.C;
-	AF.F.reg &= 0x80;
+	AF.F.reg &= 0x10;
 }
 
 template <AddressingMode writeMode, AddressingMode readMode, class wordlength>
@@ -257,7 +257,7 @@ void CPU::RRCA() {
 	AF.F.C = AF.A & 0x01;
 	AF.A >>= 1;
 	AF.A |= (AF.F.C << 7);
-	AF.F.reg &= 0x80;
+	AF.F.reg &= 0x10;
 }
 
 void CPU::STOP() {
@@ -269,7 +269,7 @@ void CPU::RLA() {
 	AF.F.C = AF.A & 0x80;
 	AF.A <<= 1;
 	AF.A |= tmp;
-	AF.F.reg &= 0x80;
+	AF.F.reg &= 0x10;
 }
 
 template <ConditionMode conditionMode, AddressingMode readMode>
@@ -288,7 +288,7 @@ void CPU::RRA() {
 	AF.F.C = AF.A & 0x01;
 	AF.A >>= 1;
 	AF.A |= (tmp << 7);
-	AF.F.reg &= 0x80;
+	AF.F.reg &= 0x10;
 }
 
 void CPU::DAA() {
