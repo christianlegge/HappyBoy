@@ -165,19 +165,19 @@ private:
 	void SCF();
 	void CCF();
 	void HALT();
-	template <WritebackMode, AddressingMode>
+	template <AddressingMode>
 	void ADC();
-	template <WritebackMode, AddressingMode>
+	template <AddressingMode>
 	void SUB();
-	template <WritebackMode, AddressingMode>
+	template <AddressingMode>
 	void SBC();
-	template <WritebackMode, AddressingMode>
+	template <AddressingMode>
 	void AND();
-	template <WritebackMode, AddressingMode>
+	template <AddressingMode>
 	void XOR();
-	template <WritebackMode, AddressingMode>
+	template <AddressingMode>
 	void OR();
-	template <WritebackMode, AddressingMode>
+	template <AddressingMode>
 	void CP();
 	template <WritebackMode, AddressingMode>
 	void RET();

@@ -235,58 +235,67 @@ void CPU::HALT() {
 template <WritebackMode writeMode, AddressingMode readMode>
 void CPU::ADC() {
 	AF.F.N = 0;
-	uint8_t target = getWriteTarget<writeMode>();
-	target += getOperand<readMode>() + AF.F.C;
-	writeValue<writeMode>(target);
+	AF.A += getOperand<readMode>() + AF.F.C;
 }
 
 template <WritebackMode writeMode, AddressingMode readMode>
 void CPU::SUB() {
 	AF.F.N = 1;
-	uint8_t target = getWriteTarget<writeMode>();
-	target = target - getOperand<readMode>();
-	writeValue<writeMode>(target);
+	AF.A -= getOperand<readMode>();
 }
 
 template <WritebackMode writeMode, AddressingMode readMode>
 void CPU::SBC() {
 	AF.F.N = 1;
-	uint8_t target = getWriteTarget<writeMode>();
-	target = target - getOperand<readMode>() - AF.F.C;
-	writeValue<writeMode>(target);
+	AF.A -= getOperand<readMode>() + AF.F.C;
 }
 
-template <WritebackMode writeMode, AddressingMode readMode>
+template <AddressingMode readMode>
 void CPU::AND() {
 	AF.F.C = 0;
 	AF.F.H = 1;
 	AF.F.N = 0;
-	uint8_t target = getWriteTarget<writeMode>();
-	target &= getOperand<readMode>();
-	AF.F.Z = target == 0;
-	writeValue<writeMode>(target);
+	AF.A &= getOperand<readMode>();
+	AF.F.Z = !(AF.A);
 }
 
-template <WritebackMode writeMode, AddressingMode readMode>
+template <AddressingMode readMode>
 void CPU::XOR() {
 	AF.F.C = 0;
 	AF.F.H = 0;
 	AF.F.N = 0;
-	uint8_t target = getWriteTarget<writeMode>();
-	target ^= getOperand<readMode>();
-	AF.F.Z = target == 0;
-	writeValue<writeMode>(target);
+	AF.A ^= getOperand<readMode>();
+	AF.F.Z = !(AF.A);
 }
 
-template <WritebackMode writeMode, AddressingMode readMode>
+template <AddressingMode readMode>
 void CPU::OR() {
 	AF.F.C = 0;
 	AF.F.H = 0;
 	AF.F.N = 0;
-	uint8_t target = getWriteTarget<writeMode>();
-	target |= getOperand<readMode>();
-	AF.F.Z = target == 0;
-	writeValue<writeMode>(target);
+	AF.A |= getOperand<readMode>();
+	AF.F.Z = !(AF.A);
+}
+
+template <AddressingMode readMode>
+void CPU::CP() {
+	uint8_t operand = getOperand<readMode>();
+	if (AF.A == operand) {
+		AF.F.Z = 1;
+		AF.F.H = 0;
+		AF.F.C = 0;
+	}
+	else if (AF.A < operand) {
+		AF.F.Z = 0;
+		AF.F.H = 1;
+		AF.F.C = 0;
+	}
+	else if (AF.A > operand) {
+		AF.F.Z = 0;
+		AF.F.H = 0;
+		AF.F.C = 1;
+	}
+	AF.F.N = 1;
 }
 
 uint8_t CPU::readBus(uint16_t addr)
