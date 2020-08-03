@@ -163,11 +163,11 @@ private:
 	void SCF();
 	void CCF();
 	void HALT();
-	template <AddressingMode>
+	template <AddressingMode, AddressingMode>
 	void ADC();
 	template <AddressingMode>
 	void SUB();
-	template <AddressingMode>
+	template <AddressingMode, AddressingMode>
 	void SBC();
 	template <AddressingMode>
 	void AND();
