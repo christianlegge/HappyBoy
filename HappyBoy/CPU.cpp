@@ -476,9 +476,9 @@ void CPU::RET() {
 
 template <AddressingMode writeMode>
 void CPU::POP() {
-	uint16_t operand = readBus(--SP);
-	operand |= readBus(--SP);
-	writeValue<writeMode, uint16_t>(operand);
+	uint16_t value = readBus(SP++);
+	value |= readBus(SP++) << 8;
+	writeValue<writeMode, uint16_t>(value);
 }
 
 template <ConditionMode conditionMode, AddressingMode readMode>
@@ -500,8 +500,8 @@ void CPU::CALL() {
 template <AddressingMode readMode>
 void CPU::PUSH() {
 	uint16_t operand = getOperand<readMode, uint16_t>();
-	writeBus(SP++, operand & 0xFF);
-	writeBus(SP++, operand >> 8);
+	writeBus(--SP, operand >> 8);
+	writeBus(--SP, operand & 0xFF);
 }
 
 template <uint16_t address>
