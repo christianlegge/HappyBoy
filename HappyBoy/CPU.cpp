@@ -460,6 +460,14 @@ void CPU::RETI() {
 	PC |= readBus(SP++) << 8;
 }
 
+void CPU::DI() {
+	ime = false;
+}
+
+void CPU::EI() {
+	ime = true;
+}
+
 uint8_t CPU::readBus(uint16_t addr)
 {
 	return bus->read(addr);
