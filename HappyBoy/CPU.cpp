@@ -298,6 +298,9 @@ void CPU::JR() {
 		PC += (int8_t)getOperand<readMode>();
 		cyclesRemaining += 4;
 	}
+	else {
+		PC += 1;
+	}
 }
 
 void CPU::RRA() {
@@ -489,6 +492,9 @@ void CPU::JP() {
 		PC = getOperand<readMode, uint16_t>();
 		cyclesRemaining += 4;
 	}
+	else {
+		PC += 2;
+	}
 }
 
 template <ConditionMode conditionMode, AddressingMode readMode>
@@ -498,6 +504,9 @@ void CPU::CALL() {
 		writeBus(--SP, PC & 0xFF);
 		PC = getOperand<readMode, uint16_t>();
 		cyclesRemaining += 12;
+	}
+	else {
+		PC += 2;
 	}
 }
 
