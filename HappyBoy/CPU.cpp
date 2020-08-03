@@ -72,10 +72,10 @@ T CPU::getOperand()
 		return fetch() | (fetch() << 8);
 		break;
 	case AddressingMode::AbsoluteHighPageC:
-		return 0xFF00 | BC.C;
+		return readBus(0xFF00 | BC.C);
 		break;
 	case AddressingMode::ImmediateHighPage:
-		return 0xFF00 | fetch();
+		return readBus(0xFF00 | fetch());
 		break;
 	default:
 		throw std::logic_error{ "Not implemented" };
