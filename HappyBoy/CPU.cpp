@@ -71,6 +71,12 @@ T CPU::getOperand()
 	case AddressingMode::Immediate16:
 		return fetch() | (fetch() << 8);
 		break;
+	case AddressingMode::AbsoluteHighPageC:
+		return 0xFF00 | BC.C;
+		break;
+	case AddressingMode::ImmediateHighPage:
+		return 0xFF00 | fetch();
+		break;
 	default:
 		throw std::logic_error{ "Not implemented" };
 	}
@@ -136,6 +142,12 @@ void CPU::writeValue(T value)
 		break;
 	case AddressingMode::AbsoluteHLI:
 		writeBus(HL.HL++, value);
+		break;
+	case AddressingMode::AbsoluteHighPageC:
+		writeBus(0xFF00 | BC.C, value);
+		break;
+	case AddressingMode::ImmediateHighPage:
+		writeBus(0xFF00 | fetch(), value);
 		break;
 	default:
 		throw std::logic_error{ "Not implemented" };
