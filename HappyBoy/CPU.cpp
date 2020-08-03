@@ -32,37 +32,44 @@ T CPU::getOperand()
 	case AddressingMode::RegisterL:
 		return HL.L;
 		break;
-	default:
-		throw std::logic_error{ "Not implemented" };
-	}
-}
-
-template <AddressingMode mode, class T>
-T CPU::getWriteTarget() {
-	switch (mode) {
-	case AddressingMode::RegisterA:
-		return AF.A;
+	case AddressingMode::RegisterAF:
+		return AF.AF & 0xFFF0;
 		break;
-	case AddressingMode::RegisterB:
-		return BC.B;
+	case AddressingMode::RegisterBC:
+		return BC.BC;
 		break;
-	case AddressingMode::RegisterC:
-		return BC.C;
+	case AddressingMode::RegisterDE:
+		return DE.DE;
 		break;
-	case AddressingMode::RegisterD:
-		return DE.D;
+	case AddressingMode::RegisterHL:
+		return HL.HL;
 		break;
-	case AddressingMode::RegisterE:
-		return DE.E;
+	case AddressingMode::RegisterSP:
+		return SP;
 		break;
-	case AddressingMode::RegisterF:
-		return AF.F.reg;
+	case AddressingMode::Absolute16:
+		return readBus(fetch() | (fetch() << 8));
 		break;
-	case AddressingMode::RegisterH:
-		return HL.H;
+	case AddressingMode::AbsoluteBC:
+		return readBus(BC.BC);
 		break;
-	case AddressingMode::RegisterL:
-		return HL.L;
+	case AddressingMode::AbsoluteDE:
+		return readBus(DE.DE);
+		break;
+	case AddressingMode::AbsoluteHL:
+		return readBus(HL.HL);
+		break;
+	case AddressingMode::AbsoluteHLD:
+		return readBus(HL.HL--);
+		break;
+	case AddressingMode::AbsoluteHLI:
+		return readBus(HL.HL++);
+		break;
+	case AddressingMode::Immediate8:
+		return fetch();
+		break;
+	case AddressingMode::Immediate16:
+		return fetch() | (fetch() << 8);
 		break;
 	default:
 		throw std::logic_error{ "Not implemented" };
@@ -96,6 +103,39 @@ void CPU::writeValue(T value)
 		break;
 	case AddressingMode::RegisterL:
 		HL.L = value;
+		break;
+	case AddressingMode::RegisterAF:
+		AF.AF = value & 0xFFF0;
+		break;
+	case AddressingMode::RegisterBC:
+		BC.BC = value;
+		break;
+	case AddressingMode::RegisterDE:
+		DE.DE = value;
+		break;
+	case AddressingMode::RegisterHL:
+		HL.HL = value;
+		break;
+	case AddressingMode::RegisterSP:
+		SP = value;
+		break;
+	case AddressingMode::Absolute16:
+		writeBus(fetch() | (fetch() << 8), value);
+		break;
+	case AddressingMode::AbsoluteBC:
+		writeBus(BC.BC, value);
+		break;
+	case AddressingMode::AbsoluteDE:
+		writeBus(DE.DE, value);
+		break;
+	case AddressingMode::AbsoluteHL:
+		writeBus(HL.HL, value);
+		break;
+	case AddressingMode::AbsoluteHLD:
+		writeBus(HL.HL--, value);
+		break;
+	case AddressingMode::AbsoluteHLI:
+		writeBus(HL.HL++, value);
 		break;
 	default:
 		throw std::logic_error{ "Not implemented" };
@@ -186,7 +226,7 @@ template <AddressingMode writeMode, AddressingMode readMode>
 void CPU::ADD()
 {
 	AF.F.N = 0;
-	uint8_t target = getWriteTarget<writeMode>();
+	uint8_t target = getOperand<writeMode>();
 	target += getOperand<readMode>();
 	/*if (((target & 0xF + (val & 0xF)) & 0x10) == 0x10)
 	{
@@ -347,7 +387,7 @@ void CPU::HALT() {
 template <AddressingMode writeMode, AddressingMode readMode>
 void CPU::ADC() {
 	AF.F.N = 0;
-	uint8_t target = getWriteTarget<writeMode>();
+	uint8_t target = getOperand<writeMode>();
 	target += getOperand<readMode>() + AF.F.C;
 	writeValue<writeMode>(target);
 }
@@ -361,7 +401,7 @@ void CPU::SUB() {
 template <AddressingMode writeMode, AddressingMode readMode>
 void CPU::SBC() {
 	AF.F.N = 1;
-	uint8_t target = getWriteTarget<writeMode>();
+	uint8_t target = getOperand<writeMode>();
 	target -= getOperand<readMode>() + AF.F.C;
 	writeValue<writeMode>(target);
 }
@@ -489,7 +529,7 @@ void CPU::writeBus(uint16_t addr, uint8_t data)
 CPU::CPU(std::shared_ptr<Bus> bus) : bus(bus)
 {
 	opcode_funcs = {
- /*0x*/	&CPU::NOP, &CPU::LD<AddressingMode::RegisterBC, AddressingMode::Immediate16>, &CPU::LD<AddressingMode::AddressBC, AddressingMode::RegisterA>, &CPU::INC<AddressingMode::RegisterBC>, &CPU::INC<AddressingMode::RegisterB>, &CPU::DEC<AddressingMode::RegisterB>, &CPU::LD<AddressingMode::RegisterB, AddressingMode::Immediate8>, &CPU::RLCA, &CPU::LD<AddressingMode::Absolute16, AddressingMode::RegisterSP>, &CPU::ADD<AddressingMode::RegisterHL, AddressingMode::RegisterBC>, &CPU::LD<AddressingMode::RegisterA, AddressingMode::AbsoluteBC>, &CPU::DEC<AddressingMode::RegisterBC>, &CPU::INC<AddressingMode::RegisterC>, &CPU::DEC<AddressingMode::RegisterC>, &CPU::LD<AddressingMode::RegisterC, AddressingMode::Immediate8>, &CPU::RRCA,
+ /*0x*/	&CPU::NOP, &CPU::LD<AddressingMode::RegisterBC, AddressingMode::Immediate16>, &CPU::LD<AddressingMode::AbsoluteBC, AddressingMode::RegisterA>, &CPU::INC<AddressingMode::RegisterBC>, &CPU::INC<AddressingMode::RegisterB>, &CPU::DEC<AddressingMode::RegisterB>, &CPU::LD<AddressingMode::RegisterB, AddressingMode::Immediate8>, &CPU::RLCA, &CPU::LD<AddressingMode::Absolute16, AddressingMode::RegisterSP>, &CPU::ADD<AddressingMode::RegisterHL, AddressingMode::RegisterBC>, &CPU::LD<AddressingMode::RegisterA, AddressingMode::AbsoluteBC>, &CPU::DEC<AddressingMode::RegisterBC>, &CPU::INC<AddressingMode::RegisterC>, &CPU::DEC<AddressingMode::RegisterC>, &CPU::LD<AddressingMode::RegisterC, AddressingMode::Immediate8>, &CPU::RRCA,
 		&CPU::STOP, &CPU::LD<AddressingMode::RegisterDE, AddressingMode::Immediate16>, &CPU::LD<AddressingMode::AbsoluteDE, AddressingMode::RegisterA>, &CPU::INC<AddressingMode::RegisterDE>, &CPU::INC<AddressingMode::RegisterD>, &CPU::DEC<AddressingMode::RegisterD>, &CPU::LD<AddressingMode::RegisterD, AddressingMode::Immediate8>, &CPU::RLA, &CPU::JR<ConditionMode::Always, AddressingMode::Immediate8>, &CPU::ADD<AddressingMode::RegisterHL, AddressingMode::RegisterDE>, &CPU::LD<AddressingMode::RegisterA, AddressingMode::AbsoluteDE>, &CPU::DEC<AddressingMode::RegisterDE>, &CPU::INC<AddressingMode::RegisterE>, &CPU::DEC<AddressingMode::RegisterE>, &CPU::LD<AddressingMode::RegisterE, AddressingMode::Immediate8>, &CPU::RRA,
 		&CPU::JR<ConditionMode::NZ, AddressingMode::Immediate8>, &CPU::LD<AddressingMode::RegisterHL, AddressingMode::Immediate16>, &CPU::LD<AddressingMode::AbsoluteHLI, AddressingMode::RegisterA>, &CPU::INC<AddressingMode::RegisterHL>, &CPU::INC<AddressingMode::RegisterH>, &CPU::DEC<AddressingMode::RegisterH>, &CPU::LD<AddressingMode::RegisterH, AddressingMode::Immediate8>, &CPU::DAA, &CPU::JR<ConditionMode::Z, AddressingMode::Immediate8>, &CPU::ADD<AddressingMode::RegisterHL, AddressingMode::RegisterHL>, &CPU::LD<AddressingMode::RegisterA, AddressingMode::AbsoluteHLI>, &CPU::DEC<AddressingMode::RegisterHL>, &CPU::INC<AddressingMode::RegisterL>, &CPU::DEC<AddressingMode::RegisterL>, &CPU::LD<AddressingMode::RegisterL, AddressingMode::Immediate8>, &CPU::CPL,
 		&CPU::JR<ConditionMode::NC, AddressingMode::Immediate8>, &CPU::LD<AddressingMode::RegisterSP, AddressingMode::Immediate16>, &CPU::LD<AddressingMode::AbsoluteHLD, AddressingMode::RegisterA>, &CPU::INC<AddressingMode::RegisterSP>, &CPU::INC<AddressingMode::AbsoluteHL>, &CPU::DEC<AddressingMode::AbsoluteHL>, &CPU::LD<AddressingMode::AbsoluteHL, AddressingMode::Immediate8>, &CPU::SCF, &CPU::JR<ConditionMode::C, AddressingMode::Immediate8>, &CPU::ADD<AddressingMode::RegisterHL, AddressingMode::RegisterSP>, &CPU::LD<AddressingMode::RegisterA, AddressingMode::AbsoluteHLD>, &CPU::DEC<AddressingMode::RegisterSP>, &CPU::INC<AddressingMode::RegisterA>, &CPU::DEC<AddressingMode::RegisterA>, &CPU::LD<AddressingMode::RegisterA, AddressingMode::Immediate8>, &CPU::CCF,

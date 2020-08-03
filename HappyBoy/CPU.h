@@ -18,9 +18,8 @@ typedef struct {
 enum class AddressingMode {
 	RegisterA, RegisterB, RegisterC, RegisterD, RegisterE, RegisterF, RegisterH, RegisterL,
 	RegisterAF, RegisterBC, RegisterDE, RegisterHL, RegisterSP,
-	AddressAF, AddressBC, AddressDE, AddressHL,
 	Immediate8, Immediate16, ImmediateHighPage,
-	Absolute8, Absolute16, AbsoluteBC, AbsoluteDE, AbsoluteHL, AbsoluteHLI, AbsoluteHLD, AbsoluteHighPageC,
+	Absolute16, AbsoluteBC, AbsoluteDE, AbsoluteHL, AbsoluteHLI, AbsoluteHLD, AbsoluteHighPageC,
 	StackPlusImmediate
 };
 
@@ -136,8 +135,6 @@ private:
 
 	template <AddressingMode, class T = uint8_t>
 	T getOperand();
-	template <AddressingMode, class T = uint8_t>
-	T getWriteTarget();
 	template <AddressingMode, class T = uint8_t>
 	void writeValue(T value);
 	template <ConditionMode>
