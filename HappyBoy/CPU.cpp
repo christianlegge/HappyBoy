@@ -256,6 +256,39 @@ void CPU::SBC() {
 	writeValue<writeMode>(target);
 }
 
+template <WritebackMode writeMode, AddressingMode readMode>
+void CPU::AND() {
+	AF.F.C = 0;
+	AF.F.H = 1;
+	AF.F.N = 0;
+	uint8_t target = getWriteTarget<writeMode>();
+	target &= getOperand<readMode>();
+	AF.F.Z = target == 0;
+	writeValue<writeMode>(target);
+}
+
+template <WritebackMode writeMode, AddressingMode readMode>
+void CPU::XOR() {
+	AF.F.C = 0;
+	AF.F.H = 0;
+	AF.F.N = 0;
+	uint8_t target = getWriteTarget<writeMode>();
+	target ^= getOperand<readMode>();
+	AF.F.Z = target == 0;
+	writeValue<writeMode>(target);
+}
+
+template <WritebackMode writeMode, AddressingMode readMode>
+void CPU::OR() {
+	AF.F.C = 0;
+	AF.F.H = 0;
+	AF.F.N = 0;
+	uint8_t target = getWriteTarget<writeMode>();
+	target |= getOperand<readMode>();
+	AF.F.Z = target == 0;
+	writeValue<writeMode>(target);
+}
+
 uint8_t CPU::readBus(uint16_t addr)
 {
 	return bus->read(addr);
