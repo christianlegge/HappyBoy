@@ -122,6 +122,36 @@ void CPU::DEC()
 	}
 }
 
+void CPU::RLCA() {
+	AF.F.C = AF.A & 0x80;
+	AF.A <<= 1;
+	AF.A |= AF.F.C;
+	AF.F.reg &= 0x80;
+}
+
+void CPU::RRCA() {
+	AF.F.C = AF.A & 0x01;
+	AF.A >>= 1;
+	AF.A |= (AF.F.C << 7);
+	AF.F.reg &= 0x80;
+}
+
+void CPU::RLA() {
+	bool tmp = AF.F.C;
+	AF.F.C = AF.A & 0x80;
+	AF.A <<= 1;
+	AF.A |= tmp;
+	AF.F.reg &= 0x80;
+}
+
+void CPU::RRA() {
+	bool tmp = AF.F.C;
+	AF.F.C = AF.A & 0x01;
+	AF.A >>= 1;
+	AF.A |= (tmp << 7);
+	AF.F.reg &= 0x80;
+}
+
 template <WritebackMode writeMode, AddressingMode readMode>
 void CPU::LD() {
 	writeValue<uint8_t, writeMode>(getOperand<uint8_t, readMode>());
