@@ -4,7 +4,7 @@
 
 #include "CPU.h"
 
-template<class T, AddressingMode mode>
+template<AddressingMode mode, class T>
 T& CPU::getOperand()
 {
 	switch (mode) {
@@ -37,31 +37,31 @@ T& CPU::getOperand()
 	}
 }
 
-template <class T, WritebackMode mode>
+template <AddressingMode mode, class T>
 T& CPU::getWriteTarget() {
 	switch (mode) {
-	case WritebackMode::RegisterA:
+	case AddressingMode::RegisterA:
 		return AF.A;
 		break;
-	case WritebackMode::RegisterB:
+	case AddressingMode::RegisterB:
 		return BC.B;
 		break;
-	case WritebackMode::RegisterC:
+	case AddressingMode::RegisterC:
 		return BC.C;
 		break;
-	case WritebackMode::RegisterD:
+	case AddressingMode::RegisterD:
 		return DE.D;
 		break;
-	case WritebackMode::RegisterE:
+	case AddressingMode::RegisterE:
 		return DE.E;
 		break;
-	case WritebackMode::RegisterF:
+	case AddressingMode::RegisterF:
 		return AF.F.reg;
 		break;
-	case WritebackMode::RegisterH:
+	case AddressingMode::RegisterH:
 		return HL.H;
 		break;
-	case WritebackMode::RegisterL:
+	case AddressingMode::RegisterL:
 		return HL.L;
 		break;
 	default:
@@ -69,32 +69,32 @@ T& CPU::getWriteTarget() {
 	}
 }
 
-template<class T, WritebackMode mode>
+template<AddressingMode mode, class T>
 void CPU::writeValue(T value)
 {
 	switch (mode) {
-	case WritebackMode::RegisterA:
+	case AddressingMode::RegisterA:
 		AF.A = value;
 		break;
-	case WritebackMode::RegisterB:
+	case AddressingMode::RegisterB:
 		BC.B = value;
 		break;
-	case WritebackMode::RegisterC:
+	case AddressingMode::RegisterC:
 		BC.C = value;
 		break;
-	case WritebackMode::RegisterD:
+	case AddressingMode::RegisterD:
 		DE.D = value;
 		break;
-	case WritebackMode::RegisterE:
+	case AddressingMode::RegisterE:
 		DE.E = value;
 		break;
-	case WritebackMode::RegisterF:
+	case AddressingMode::RegisterF:
 		AF.F.reg = value & 0xF0;
 		break;
-	case WritebackMode::RegisterH:
+	case AddressingMode::RegisterH:
 		HL.H = value;
 		break;
-	case WritebackMode::RegisterL:
+	case AddressingMode::RegisterL:
 		HL.L = value;
 		break;
 	default:
@@ -130,7 +130,7 @@ void CPU::NOP() {
 template <AddressingMode readMode>
 void CPU::INC()
 {
-	uint8_t op = getOperand<uint8_t, readMode>();
+	uint8_t op = getOperand<readMode>();
 	op++;
 	AF.F.N = 0;
 	if (op == 0)
@@ -154,7 +154,7 @@ void CPU::INC()
 template <AddressingMode readMode>
 void CPU::DEC()
 {
-	uint8_t op = getOperand<uint8_t, readMode>();
+	uint8_t op = getOperand<readMode>();
 	op--;
 	AF.F.N = 0;
 	if (op == 0)
@@ -182,7 +182,7 @@ void CPU::RLCA() {
 	AF.F.reg &= 0x80;
 }
 
-template <WritebackMode writeMode, AddressingMode readMode>
+template <AddressingMode writeMode, AddressingMode readMode>
 void CPU::ADD()
 {
 	AF.F.N = 0;
@@ -335,9 +335,9 @@ void CPU::CCF() {
 	AF.F.C = !AF.F.C;
 }
 
-template <WritebackMode writeMode, AddressingMode readMode>
+template <AddressingMode writeMode, AddressingMode readMode>
 void CPU::LD() {
-	writeValue<uint8_t, writeMode>(getOperand<uint8_t, readMode>());
+	writeValue<writeMode>(getOperand<readMode>());
 }
 
 void CPU::HALT() {
@@ -418,7 +418,7 @@ void CPU::RET() {
 	}
 }
 
-template <WritebackMode writeMode>
+template <AddressingMode writeMode>
 void CPU::POP() {
 	uint16_t operand = readBus(--SP);
 	operand |= readBus(--SP);
@@ -481,14 +481,14 @@ void CPU::writeBus(uint16_t addr, uint8_t data)
 CPU::CPU(std::shared_ptr<Bus> bus) : bus(bus)
 {
 	opcode_funcs = {
- /*0x*/	&CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::INC<AddressingMode::RegisterBC>, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP,
+ /*0x*/	&CPU::NOP, &CPU::LD<AddressingMode::RegisterBC, AddressingMode::Immediate16>, &CPU::LD<AddressingMode::AddressBC, AddressingMode::RegisterA>, &CPU::INC<AddressingMode::RegisterBC>, &CPU::INC<AddressingMode::RegisterB>, &CPU::DEC<AddressingMode::RegisterB>, &CPU::LD<AddressingMode::RegisterB, AddressingMode::Immediate8>, &CPU::RLCA, &CPU::LD<AddressingMode::Absolute16, AddressingMode::RegisterSP>, &CPU::ADD<AddressingMode::RegisterHL, AddressingMode::RegisterBC>, &CPU::LD<AddressingMode::RegisterA, AddressingMode::AbsoluteBC>, &CPU::DEC<AddressingMode::RegisterBC>, &CPU::INC<AddressingMode::RegisterC>, &CPU::DEC<AddressingMode::RegisterC>, &CPU::LD<AddressingMode::RegisterC, AddressingMode::Immediate8>, &CPU::RRCA,
 		&CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP,
 		&CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP,
 		&CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP,
-		&CPU::LD<WritebackMode::RegisterB, AddressingMode::RegisterB>, &CPU::LD<WritebackMode::RegisterB, AddressingMode::RegisterC>, &CPU::LD<WritebackMode::RegisterB, AddressingMode::RegisterD>, &CPU::LD<WritebackMode::RegisterB, AddressingMode::RegisterE>, &CPU::LD<WritebackMode::RegisterB, AddressingMode::RegisterH>, &CPU::LD<WritebackMode::RegisterB, AddressingMode::RegisterL>, &CPU::LD<WritebackMode::RegisterB, AddressingMode::AddressHL>, &CPU::LD<WritebackMode::RegisterB, AddressingMode::RegisterA>, &CPU::LD<WritebackMode::RegisterC, AddressingMode::RegisterB>, &CPU::LD<WritebackMode::RegisterC, AddressingMode::RegisterC>, &CPU::LD<WritebackMode::RegisterC, AddressingMode::RegisterD>, &CPU::LD<WritebackMode::RegisterC, AddressingMode::RegisterE>, &CPU::LD<WritebackMode::RegisterC, AddressingMode::RegisterH>, &CPU::LD<WritebackMode::RegisterC, AddressingMode::RegisterL>, &CPU::LD<WritebackMode::RegisterC, AddressingMode::AddressHL>, &CPU::LD<WritebackMode::RegisterC, AddressingMode::RegisterA>,
-		&CPU::LD<WritebackMode::RegisterD, AddressingMode::RegisterB>, &CPU::LD<WritebackMode::RegisterD, AddressingMode::RegisterC>, &CPU::LD<WritebackMode::RegisterD, AddressingMode::RegisterD>, &CPU::LD<WritebackMode::RegisterD, AddressingMode::RegisterE>, &CPU::LD<WritebackMode::RegisterD, AddressingMode::RegisterH>, &CPU::LD<WritebackMode::RegisterD, AddressingMode::RegisterL>, &CPU::LD<WritebackMode::RegisterD, AddressingMode::AddressHL>, &CPU::LD<WritebackMode::RegisterD, AddressingMode::RegisterA>, &CPU::LD<WritebackMode::RegisterE, AddressingMode::RegisterB>, &CPU::LD<WritebackMode::RegisterE, AddressingMode::RegisterC>, &CPU::LD<WritebackMode::RegisterE, AddressingMode::RegisterD>, &CPU::LD<WritebackMode::RegisterE, AddressingMode::RegisterE>, &CPU::LD<WritebackMode::RegisterE, AddressingMode::RegisterH>, &CPU::LD<WritebackMode::RegisterE, AddressingMode::RegisterL>, &CPU::LD<WritebackMode::RegisterE, AddressingMode::AddressHL>, &CPU::LD<WritebackMode::RegisterE, AddressingMode::RegisterA>,
-		&CPU::LD<WritebackMode::RegisterH, AddressingMode::RegisterB>, &CPU::LD<WritebackMode::RegisterH, AddressingMode::RegisterC>, &CPU::LD<WritebackMode::RegisterH, AddressingMode::RegisterD>, &CPU::LD<WritebackMode::RegisterH, AddressingMode::RegisterE>, &CPU::LD<WritebackMode::RegisterH, AddressingMode::RegisterH>, &CPU::LD<WritebackMode::RegisterH, AddressingMode::RegisterL>, &CPU::LD<WritebackMode::RegisterH, AddressingMode::AddressHL>, &CPU::LD<WritebackMode::RegisterH, AddressingMode::RegisterA>, &CPU::LD<WritebackMode::RegisterL, AddressingMode::RegisterB>, &CPU::LD<WritebackMode::RegisterL, AddressingMode::RegisterC>, &CPU::LD<WritebackMode::RegisterL, AddressingMode::RegisterD>, &CPU::LD<WritebackMode::RegisterL, AddressingMode::RegisterE>, &CPU::LD<WritebackMode::RegisterL, AddressingMode::RegisterH>, &CPU::LD<WritebackMode::RegisterL, AddressingMode::RegisterL>, &CPU::LD<WritebackMode::RegisterL, AddressingMode::AddressHL>, &CPU::LD<WritebackMode::RegisterL, AddressingMode::RegisterA>,
-		&CPU::LD<WritebackMode::AddressHL, AddressingMode::RegisterB>, &CPU::LD<WritebackMode::AddressHL, AddressingMode::RegisterC>, &CPU::LD<WritebackMode::AddressHL, AddressingMode::RegisterD>, &CPU::LD<WritebackMode::AddressHL, AddressingMode::RegisterE>, &CPU::LD<WritebackMode::AddressHL, AddressingMode::RegisterH>, &CPU::LD<WritebackMode::AddressHL, AddressingMode::RegisterL>, &CPU::HALT, &CPU::LD<WritebackMode::AddressHL, AddressingMode::RegisterA>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterB>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterC>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterD>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterE>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterH>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterL>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::AddressHL>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<WritebackMode::RegisterA, AddressingMode::RegisterA>,
+		&CPU::LD<AddressingMode::RegisterB, AddressingMode::RegisterB>, &CPU::LD<AddressingMode::RegisterB, AddressingMode::RegisterC>, &CPU::LD<AddressingMode::RegisterB, AddressingMode::RegisterD>, &CPU::LD<AddressingMode::RegisterB, AddressingMode::RegisterE>, &CPU::LD<AddressingMode::RegisterB, AddressingMode::RegisterH>, &CPU::LD<AddressingMode::RegisterB, AddressingMode::RegisterL>, &CPU::LD<AddressingMode::RegisterB, AddressingMode::AddressHL>, &CPU::LD<AddressingMode::RegisterB, AddressingMode::RegisterA>, &CPU::LD<AddressingMode::RegisterC, AddressingMode::RegisterB>, &CPU::LD<AddressingMode::RegisterC, AddressingMode::RegisterC>, &CPU::LD<AddressingMode::RegisterC, AddressingMode::RegisterD>, &CPU::LD<AddressingMode::RegisterC, AddressingMode::RegisterE>, &CPU::LD<AddressingMode::RegisterC, AddressingMode::RegisterH>, &CPU::LD<AddressingMode::RegisterC, AddressingMode::RegisterL>, &CPU::LD<AddressingMode::RegisterC, AddressingMode::AddressHL>, &CPU::LD<AddressingMode::RegisterC, AddressingMode::RegisterA>,
+		&CPU::LD<AddressingMode::RegisterD, AddressingMode::RegisterB>, &CPU::LD<AddressingMode::RegisterD, AddressingMode::RegisterC>, &CPU::LD<AddressingMode::RegisterD, AddressingMode::RegisterD>, &CPU::LD<AddressingMode::RegisterD, AddressingMode::RegisterE>, &CPU::LD<AddressingMode::RegisterD, AddressingMode::RegisterH>, &CPU::LD<AddressingMode::RegisterD, AddressingMode::RegisterL>, &CPU::LD<AddressingMode::RegisterD, AddressingMode::AddressHL>, &CPU::LD<AddressingMode::RegisterD, AddressingMode::RegisterA>, &CPU::LD<AddressingMode::RegisterE, AddressingMode::RegisterB>, &CPU::LD<AddressingMode::RegisterE, AddressingMode::RegisterC>, &CPU::LD<AddressingMode::RegisterE, AddressingMode::RegisterD>, &CPU::LD<AddressingMode::RegisterE, AddressingMode::RegisterE>, &CPU::LD<AddressingMode::RegisterE, AddressingMode::RegisterH>, &CPU::LD<AddressingMode::RegisterE, AddressingMode::RegisterL>, &CPU::LD<AddressingMode::RegisterE, AddressingMode::AddressHL>, &CPU::LD<AddressingMode::RegisterE, AddressingMode::RegisterA>,
+		&CPU::LD<AddressingMode::RegisterH, AddressingMode::RegisterB>, &CPU::LD<AddressingMode::RegisterH, AddressingMode::RegisterC>, &CPU::LD<AddressingMode::RegisterH, AddressingMode::RegisterD>, &CPU::LD<AddressingMode::RegisterH, AddressingMode::RegisterE>, &CPU::LD<AddressingMode::RegisterH, AddressingMode::RegisterH>, &CPU::LD<AddressingMode::RegisterH, AddressingMode::RegisterL>, &CPU::LD<AddressingMode::RegisterH, AddressingMode::AddressHL>, &CPU::LD<AddressingMode::RegisterH, AddressingMode::RegisterA>, &CPU::LD<AddressingMode::RegisterL, AddressingMode::RegisterB>, &CPU::LD<AddressingMode::RegisterL, AddressingMode::RegisterC>, &CPU::LD<AddressingMode::RegisterL, AddressingMode::RegisterD>, &CPU::LD<AddressingMode::RegisterL, AddressingMode::RegisterE>, &CPU::LD<AddressingMode::RegisterL, AddressingMode::RegisterH>, &CPU::LD<AddressingMode::RegisterL, AddressingMode::RegisterL>, &CPU::LD<AddressingMode::RegisterL, AddressingMode::AddressHL>, &CPU::LD<AddressingMode::RegisterL, AddressingMode::RegisterA>,
+		&CPU::LD<AddressingMode::AddressHL, AddressingMode::RegisterB>, &CPU::LD<AddressingMode::AddressHL, AddressingMode::RegisterC>, &CPU::LD<AddressingMode::AddressHL, AddressingMode::RegisterD>, &CPU::LD<AddressingMode::AddressHL, AddressingMode::RegisterE>, &CPU::LD<AddressingMode::AddressHL, AddressingMode::RegisterH>, &CPU::LD<AddressingMode::AddressHL, AddressingMode::RegisterL>, &CPU::HALT, &CPU::LD<AddressingMode::AddressHL, AddressingMode::RegisterA>, &CPU::LD<AddressingMode::RegisterA, AddressingMode::RegisterB>, &CPU::LD<AddressingMode::RegisterA, AddressingMode::RegisterC>, &CPU::LD<AddressingMode::RegisterA, AddressingMode::RegisterD>, &CPU::LD<AddressingMode::RegisterA, AddressingMode::RegisterE>, &CPU::LD<AddressingMode::RegisterA, AddressingMode::RegisterH>, &CPU::LD<AddressingMode::RegisterA, AddressingMode::RegisterL>, &CPU::LD<AddressingMode::RegisterA, AddressingMode::AddressHL>, &CPU::LD<AddressingMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<AddressingMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<AddressingMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<AddressingMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<AddressingMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<AddressingMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<AddressingMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<AddressingMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<AddressingMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<AddressingMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<AddressingMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<AddressingMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<AddressingMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<AddressingMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<AddressingMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<AddressingMode::RegisterA, AddressingMode::RegisterA>, &CPU::LD<AddressingMode::RegisterA, AddressingMode::RegisterA>,
 		&CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP,
 		&CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP,
 		&CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP, &CPU::NOP,
@@ -800,7 +800,6 @@ void CPU::execute(Instruction& ins)
 		////inc\(&BC.B);
 		break;
 	case 5:
-		dec(&BC.B);
 		break;
 	case 6:
 		BC.B = ins.param8;
@@ -858,7 +857,7 @@ void CPU::execute(Instruction& ins)
 		//inc\(&BC.C);
 		break;
 	case 13:
-		dec(&BC.C);
+		//dec(&BC.C);
 		break;
 	case 14:
 		BC.C = ins.param8;
@@ -892,7 +891,7 @@ void CPU::execute(Instruction& ins)
 		//inc\(&DE.D);
 		break;
 	case 21:
-		dec(&DE.D);
+		//dec(&DE.D);
 		break;
 	case 22:
 		DE.D = ins.param8;
@@ -955,7 +954,7 @@ void CPU::execute(Instruction& ins)
 		//inc\(&DE.E);
 		break;
 	case 29:
-		dec(&DE.E);
+		//dec(&DE.E);
 		break;
 	case 30:
 		DE.E = ins.param8;
@@ -999,7 +998,7 @@ void CPU::execute(Instruction& ins)
 		//inc\(&HL.H);
 		break;
 	case 37:
-		dec(&HL.H);
+		//dec(&HL.H);
 		break;
 	case 38:
 		HL.H = ins.param8;
@@ -1058,7 +1057,7 @@ void CPU::execute(Instruction& ins)
 		//inc\(&HL.L);
 		break;
 	case 45:
-		dec(&HL.L);
+		//dec(&HL.L);
 		break;
 	case 46:
 		HL.L = ins.param8;
@@ -1090,10 +1089,10 @@ void CPU::execute(Instruction& ins)
 		SP++;
 		break;
 	case 52:
-		incMem((HL.H << 8) + HL.L);
+		//incMem((HL.H << 8) + HL.L);
 		break;
 	case 53:
-		decMem((HL.H << 8) + HL.L);
+		//decMem((HL.H << 8) + HL.L);
 		break;
 	case 54:
 		writeBus((HL.H << 8) + HL.L, ins.param8);
@@ -1151,7 +1150,7 @@ void CPU::execute(Instruction& ins)
 		//inc\(&AF.A);
 		break;
 	case 61:
-		dec(&AF.A);
+		//dec(&AF.A);
 		break;
 	case 62:
 		AF.A = ins.param8;
@@ -1386,52 +1385,52 @@ void CPU::execute(Instruction& ins)
 	case 143:
 		break;
 	case 144:
-		sub(&AF.A, BC.B);
+		//sub(&AF.A, BC.B);
 		break;
 	case 145:
-		sub(&AF.A, BC.C);
+		//sub(&AF.A, BC.C);
 		break;
 	case 146:
-		sub(&AF.A, DE.D);
+		//sub(&AF.A, DE.D);
 		break;
 	case 147:
-		sub(&AF.A, DE.E);
+		//sub(&AF.A, DE.E);
 		break;
 	case 148:
-		sub(&AF.A, HL.H);
+		//sub(&AF.A, HL.H);
 		break;
 	case 149:
-		sub(&AF.A, HL.L);
+		//sub(&AF.A, HL.L);
 		break;
 	case 150:
-		sub(&AF.A, readBus((HL.H << 8) + HL.L));
+		//sub(&AF.A, readBus((HL.H << 8) + HL.L));
 		break;
 	case 151:
-		sub(&AF.A, AF.A);
+		//sub(&AF.A, AF.A);
 		break;
 	case 152:
-		sub(&AF.A, BC.B + AF.F.C);
+		//sub(&AF.A, BC.B + AF.F.C);
 		break;
 	case 153:
-		sub(&AF.A, BC.C + AF.F.C);
+		//sub(&AF.A, BC.C + AF.F.C);
 		break;
 	case 154:
-		sub(&AF.A, DE.D + AF.F.C);
+		//sub(&AF.A, DE.D + AF.F.C);
 		break;
 	case 155:
-		sub(&AF.A, DE.E + AF.F.C);
+		//sub(&AF.A, DE.E + AF.F.C);
 		break;
 	case 156:
-		sub(&AF.A, HL.H + AF.F.C);
+		//sub(&AF.A, HL.H + AF.F.C);
 		break;
 	case 157:
-		sub(&AF.A, HL.L + AF.F.C);
+		//sub(&AF.A, HL.L + AF.F.C);
 		break;
 	case 158:
-		sub(&AF.A, readBus((HL.H << 8) + HL.L) + AF.F.C);
+		//sub(&AF.A, readBus((HL.H << 8) + HL.L) + AF.F.C);
 		break;
 	case 159:
-		sub(&AF.A, AF.A + AF.F.C);
+		//sub(&AF.A, AF.A + AF.F.C);
 		break;
 	case 160:
 		AF.A = AF.A & BC.B;
@@ -1602,28 +1601,28 @@ void CPU::execute(Instruction& ins)
 		AF.F.C = 0;
 		break;
 	case 184:
-		cp(BC.B);
+		//cp(BC.B);
 		break;
 	case 185:
-		cp(BC.C);
+		//cp(BC.C);
 		break;
 	case 186:
-		cp(DE.D);
+		//cp(DE.D);
 		break;
 	case 187:
-		cp(DE.E);
+		//cp(DE.E);
 		break;
 	case 188:
-		cp(HL.H);
+		//cp(HL.H);
 		break;
 	case 189:
-		cp(HL.L);
+		//cp(HL.L);
 		break;
 	case 190:
-		cp(readBus((HL.H << 8) + HL.L));
+		//cp(readBus((HL.H << 8) + HL.L));
 		break;
 	case 191:
-		cp(AF.A);
+		//cp(AF.A);
 		break;
 	case 192:
 		if (AF.F.Z == 0)
@@ -1746,7 +1745,7 @@ void CPU::execute(Instruction& ins)
 		writeBus(--SP, DE.E);
 		break;
 	case 214:
-		sub(&AF.A, ins.param8);
+		//sub(&AF.A, ins.param8);
 		break;
 	case 215:
 		writeBus(--SP, PC >> 8);
@@ -1789,7 +1788,7 @@ void CPU::execute(Instruction& ins)
 		throw "Invalid opcode";
 		break;
 	case 222:
-		sub(&AF.A, ins.param8 + AF.F.C);
+		//sub(&AF.A, ins.param8 + AF.F.C);
 		break;
 	case 223:
 		writeBus(--SP, PC >> 8);
@@ -1939,143 +1938,13 @@ void CPU::execute(Instruction& ins)
 		throw "Invalid opcode";
 		break;
 	case 254:
-		cp(ins.param8);
+		//cp(ins.param8);
 		break;
 	case 255:
 		writeBus(--SP, PC >> 8);
 		writeBus(--SP, PC & 0b11111111);
 		PC = 0x0038;
 		break;
-	}
-}
-
-
-
-
-void CPU::incMem(uint16_t addr)
-{
-	writeBus(addr, readBus(addr) + 1);
-	AF.F.N = 0;
-	if (readBus(addr) == 256)
-	{
-		writeBus(addr, 0);
-		AF.F.Z = 1;
-	}
-	else
-	{
-		AF.F.Z = 0;
-	}
-	if ((readBus(addr) & 0b00001111) == 0)
-	{
-		AF.F.H = 1;
-	}
-	else
-	{
-		AF.F.H = 0;
-	}
-}
-
-void CPU::dec(uint8_t* reg)
-{
-	(*reg)--;
-	AF.F.N = 0;
-	if (*reg == -1)
-	{
-		*reg = 255;
-	}
-	if (*reg == 0)
-	{
-		AF.F.Z = 1;
-	}
-	else
-	{
-		AF.F.Z = 0;
-	}
-	if ((*reg & 0b00001111) == 0b00001111)
-	{
-		AF.F.H = 1;
-	}
-	else
-	{
-		AF.F.H = 0;
-	}
-}
-
-void CPU::decMem(uint16_t addr)
-{
-	writeBus(addr, readBus(addr) - 1);
-	AF.F.N = 0;
-	if (readBus(addr) == -1)
-	{
-		writeBus(addr, 255);
-		AF.F.Z = 1;
-	}
-	else
-	{
-		AF.F.Z = 0;
-	}
-	if ((readBus(addr) & 0b00001111) == 0)
-	{
-		AF.F.H = 1;
-	}
-	else
-	{
-		AF.F.H = 0;
-	}
-}
-
-void CPU::sub(uint8_t* reg, int val)
-{
-	AF.F.N = 1;
-	uint8_t init = *reg;
-	*reg -= val;
-	if (((*reg & 0xF + (((val & 0xF) ^ (0xF)) + 1) & 0x10) == 0x10))
-	{
-		AF.F.H = 1;
-	}
-	else
-	{
-		AF.F.H = 0;
-	}
-	if (*reg > init)
-	{
-		AF.F.C = 1;
-	}
-	else
-	{
-		AF.F.C = 0;
-	}
-	if (*reg == 0)
-	{
-		AF.F.Z = 1;
-	}
-	else
-	{
-		AF.F.Z = 0;
-	}
-}
-
-void CPU::cp(int val)
-{
-	AF.F.N = 1;
-	int diff = AF.A - val;
-	if (diff < 0)
-	{
-		AF.F.C = 1;
-		AF.F.H = 0;
-		AF.F.Z = 0;
-	}
-	else if (diff > 0)
-	{
-		AF.F.C = 0;
-		AF.F.H = 1;
-		AF.F.Z = 0;
-	}
-	else
-	{
-		AF.F.C = 0;
-		AF.F.H = 0;
-		AF.F.Z = 1;
 	}
 }
 

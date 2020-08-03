@@ -17,18 +17,10 @@ typedef struct {
 
 enum class AddressingMode {
 	RegisterA, RegisterB, RegisterC, RegisterD, RegisterE, RegisterF, RegisterH, RegisterL,
-	RegisterAF, RegisterBC, RegisterDE, RegisterHL,
+	RegisterAF, RegisterBC, RegisterDE, RegisterHL, RegisterSP,
 	AddressAF, AddressBC, AddressDE, AddressHL,
-	Immediate8, Immediate16,
-	Absolute8, Absolute16, AbsoluteHL
-};
-
-enum class WritebackMode {
-	RegisterA, RegisterB, RegisterC, RegisterD, RegisterE, RegisterF, RegisterH, RegisterL,
-	RegisterAF, RegisterBC, RegisterDE, RegisterHL,
-	AddressAF, AddressBC, AddressDE, AddressHL,
-	Immediate8, Immediate16,
-	Absolute8, Absolute16, AbsoluteHL
+	Immediate8, Immediate16, ImmediateHighPage,
+	Absolute8, Absolute16, AbsoluteBC, AbsoluteDE, AbsoluteHL
 };
 
 enum class ConditionMode {
@@ -141,24 +133,24 @@ private:
 	uint8_t readBus(uint16_t addr);
 	void writeBus(uint16_t addr, uint8_t data);
 
-	template <class T, AddressingMode>
+	template <AddressingMode, class T = uint8_t>
 	T& getOperand();
-	template <class T, WritebackMode>
+	template <AddressingMode, class T = uint8_t>
 	T& getWriteTarget();
-	template <class T, WritebackMode>
+	template <AddressingMode, class T = uint8_t>
 	void writeValue(T value);
 	template <ConditionMode>
 	bool getConditional();
 
 	void NOP();
-	template <WritebackMode, AddressingMode>
+	template <AddressingMode, AddressingMode>
 	void LD();
 	template <AddressingMode>
 	void INC();
 	template <AddressingMode>
 	void DEC();
 	void RLCA();
-	template <WritebackMode, AddressingMode>
+	template <AddressingMode, AddressingMode>
 	void ADD();
 	void RRCA();
 	void STOP();
@@ -187,7 +179,7 @@ private:
 	void CP();
 	template <ConditionMode>
 	void RET();
-	template <WritebackMode>
+	template <AddressingMode>
 	void POP();
 	template <ConditionMode, AddressingMode>
 	void JP();
@@ -201,11 +193,6 @@ private:
 	void DI();
 	void EI();
 
-	void incMem(uint16_t addr);
-	void dec(uint8_t* reg);
-	void decMem(uint16_t addr);
-	void sub(uint8_t* reg, int val);
-	void cp(int val);
 	void cb(uint8_t opcode);
 
 	std::string registerString(uint8_t reg, std::string name);
