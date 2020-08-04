@@ -852,9 +852,6 @@ uint16_t CPU::tick() {
 
 	if (cyclesRemaining <= 0) {
 		uint8_t opcode = fetch();
-		if (opcode == 0x33 || opcode == 0x3B || opcode == 0x39 || opcode == 0xE8 || opcode == 0xF8) {
-			int x = 0;
-		}
 		if (opcode == 0xCB) {
 			uint8_t cb_opcode = fetch();
 			(this->*cb_opcode_funcs[cb_opcode])();
