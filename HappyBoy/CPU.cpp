@@ -259,15 +259,25 @@ template <AddressingMode writeMode, AddressingMode readMode, class wordlength>
 void CPU::ADD()
 {
 	AF.F.N = 0;
+
 	wordlength target = getOperand<writeMode, wordlength>();
-	wordlength new_value = target + getOperand<readMode, wordlength>();
-	AF.F.C = new_value < target;
-	AF.F.H = ((new_value & 0xF0) > (target & 0xF0)) | AF.F.C;
+	wordlength operand = getOperand<readMode, wordlength>();
+	wordlength new_value = target + operand;
+
+	AF.F.C = (wordlength)(target + operand) < target;
+	if (typeid(wordlength) == typeid(uint16_t)) {
+		AF.F.H = ((operand & 0x0FFF) + (target & 0x0FFF)) >= 0x1000;
+	}
+	else {
+		AF.F.H = ((operand & 0x0F) + (target & 0x0F)) >= 0x10;
+	}
 	if (writeMode == AddressingMode::RegisterSP) {
+		// opcode 0xE8 resets Z
 		AF.F.Z = 0;
 	}
 	else if (writeMode != AddressingMode::RegisterHL) {
-		AF.F.Z = !new_value;
+		// opcodes 0x09, 0x19, 0x29, 0x39 don't affect Z
+		AF.F.Z = !(new_value);
 	}
 	writeValue<writeMode, wordlength>(new_value);
 }
