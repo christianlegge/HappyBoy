@@ -845,23 +845,27 @@ uint16_t CPU::tick() {
 		uint16_t addr = 0;
 		if (IF.vblank && IE.vblank) {
 			addr = 0x0040;
+			IF.vblank = false;
 		}
 		else if (IF.lcdc && IE.lcdc) {
 			addr = 0x0048;
+			IF.lcdc = false;
 		}
 		else if (IF.timer && IE.timer) {
 			addr = 0x0050;
+			IF.timer = false;
 		}
 		else if (IF.serial && IE.serial) {
 			addr = 0x0058;
+			IF.serial = false;
 		}
 		else if (IF.joypad && IE.joypad) {
 			addr = 0x0060;
+			IF.joypad = false;
 		}
 
 		if (addr) {
 			ime = false;
-			IF.reg = 0;
 			writeBus(--SP, PC >> 8);
 			writeBus(--SP, PC & 0b11111111);
 			PC = addr;
