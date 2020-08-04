@@ -539,6 +539,7 @@ void CPU::RST() {
 }
 
 void CPU::RETI() {
+	ime = true;
 	PC = readBus(SP++);
 	PC |= readBus(SP++) << 8;
 }
