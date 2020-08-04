@@ -79,12 +79,13 @@ T CPU::getOperand()
 		break;
 	case AddressingMode::StackPlusImmediate:
 	{
-		uint16_t new_sp = SP + fetch();
-		AF.F.C = SP > new_sp;
-		AF.F.H = (new_sp & 0xF000) > (SP & 0xF000) || AF.F.C;
+		uint8_t operand = fetch();
+		AF.F.C = (SP & 0xFF) + operand >= 0x100;
+		AF.F.H = (SP & 0x0F) + (operand & 0x0F) >= 0x10;
 		AF.F.Z = 0;
 		AF.F.N = 0;
-		return new_sp;
+		SP += (int8_t)operand;
+		return SP;
 	}
 		break;
 	default:
@@ -262,10 +263,17 @@ void CPU::ADD()
 
 	wordlength target = getOperand<writeMode, wordlength>();
 	wordlength operand = getOperand<readMode, wordlength>();
-	wordlength new_value = target + operand;
+	wordlength new_value;
+
+	if (writeMode == AddressingMode::RegisterSP) {
+		new_value = target + (int8_t)operand;
+	}
+	else {
+		new_value = target + operand;
+	}
 
 	AF.F.C = (wordlength)(target + operand) < target;
-	if (typeid(wordlength) == typeid(uint16_t)) {
+	if (writeMode == AddressingMode::RegisterHL) {
 		AF.F.H = ((operand & 0x0FFF) + (target & 0x0FFF)) >= 0x1000;
 	}
 	else {
