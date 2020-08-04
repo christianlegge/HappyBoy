@@ -132,6 +132,9 @@ void Bus::write(uint16_t addr, uint8_t data)
 	else if (addr == 0xFF45) {
 		ppu->LYC = data;
 	}
+	else if (addr == 0xFF46) {
+		memcpy(ram + (data << 8), ram + 0xFE00, 160);
+	}
 	else if (addr == 0xFF47) {
 		ppu->BGP.reg = data;
 	}
