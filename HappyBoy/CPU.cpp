@@ -867,7 +867,6 @@ uint16_t CPU::tick() {
 	}
 
 	cyclesRemaining--;
-	counter++;
 
 	if (TAC.running) {
 		uint8_t bit;
@@ -887,7 +886,8 @@ uint16_t CPU::tick() {
 		}
 		bool tmp = counter & (1 << bit);
 		counter++;
-		if (tmp != (counter & (1 << bit))) {
+		bool tmp2 = counter & (1 << bit);
+		if (tmp != tmp2) {
 			TIMA++;
 		}
 		if (TIMA == 0) {
