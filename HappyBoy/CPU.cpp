@@ -425,30 +425,32 @@ void CPU::HALT() {
 
 template <AddressingMode readMode>
 void CPU::ADC() {
-	AF.F.N = 0;
-	uint8_t new_value = AF.A + getOperand<readMode>() + AF.F.C;
-	AF.F.C = new_value < AF.A || (new_value == AF.A && AF.F.C);
-	AF.F.H = ((new_value & 0xF0) > (AF.A & 0xF0)) | AF.F.C;
+	uint8_t operand = getOperand<readMode>();
+	uint8_t new_value = AF.A + operand + AF.F.C;
+	AF.F.H = (AF.A & 0x0F) + (operand & 0x0F) + AF.F.C >= 0x10;
+	AF.F.C = AF.A + operand + AF.F.C >= 0x100;
 	AF.F.Z = !new_value;
+	AF.F.N = 0;
 	AF.A = new_value;
 }
 
 template <AddressingMode readMode>
 void CPU::SUB() {
+	uint8_t operand = getOperand<readMode>();
+	AF.F.C = AF.A - operand < 0x00;
+	AF.F.H = (AF.A & 0x0F) - (operand & 0x0F) < 0x00;
 	AF.F.N = 1;
-	uint8_t new_value = AF.A - getOperand<readMode>();
-	AF.F.C = new_value > AF.A;
-	AF.F.H = ((new_value & 0xF0) < (AF.A & 0xF0)) | AF.F.C;
-	AF.F.Z = !new_value;
-	AF.A = new_value;
+	AF.A = AF.A - operand;
+	AF.F.Z = !AF.A;
 }
 
 template <AddressingMode readMode>
 void CPU::SBC() {
 	AF.F.N = 1;
-	uint8_t new_value = AF.A - getOperand<readMode>() - AF.F.C;
-	AF.F.C = new_value > AF.A || (new_value == AF.A && AF.F.C);
-	AF.F.H = ((new_value & 0xF0) < (AF.A & 0xF0)) | AF.F.C;
+	uint8_t operand = getOperand<readMode>();
+	uint8_t new_value = AF.A - operand - AF.F.C;
+	AF.F.H = (AF.A & 0x0F) - (operand & 0x0F) - AF.F.C < 0x00;
+	AF.F.C = AF.A - operand - AF.F.C < 0x00;
 	AF.F.Z = !new_value;
 	AF.A = new_value;
 }
