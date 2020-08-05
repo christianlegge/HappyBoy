@@ -262,31 +262,30 @@ void CPU::ADD()
 
 	wordlength target = getOperand<writeMode, wordlength>();
 	wordlength operand = getOperand<readMode, wordlength>();
-	wordlength new_value;
 
 	if (writeMode == AddressingMode::RegisterSP) {
-		new_value = target + (int8_t)operand;
-	}
-	else {
-		new_value = target + operand;
-	}
-
-	AF.F.C = (wordlength)(target + operand) < target;
-	if (writeMode == AddressingMode::RegisterHL) {
-		AF.F.H = ((operand & 0x0FFF) + (target & 0x0FFF)) >= 0x1000;
-	}
-	else {
-		AF.F.H = ((operand & 0x0F) + (target & 0x0F)) >= 0x10;
-	}
-	if (writeMode == AddressingMode::RegisterSP) {
-		// opcode 0xE8 resets Z
+		// opcode 0xE8
 		AF.F.Z = 0;
+		AF.F.H = (target & 0x0F) + (operand & 0x0F) >= 0x10;
+		AF.F.C = (target & 0xFF) + (operand & 0xFF) >= 0x100;
+		SP += (int8_t)operand;
 	}
-	else if (writeMode != AddressingMode::RegisterHL) {
-		// opcodes 0x09, 0x19, 0x29, 0x39 don't affect Z
-		AF.F.Z = !(new_value);
+	else {
+		wordlength new_value = target + operand;
+
+		AF.F.C = (wordlength)(target + operand) < target;
+		if (writeMode == AddressingMode::RegisterHL) {
+			AF.F.H = ((operand & 0x0FFF) + (target & 0x0FFF)) >= 0x1000;
+		}
+		else {
+			AF.F.H = ((operand & 0x0F) + (target & 0x0F)) >= 0x10;
+		}
+		if (writeMode != AddressingMode::RegisterHL) {
+			// opcodes 0x09, 0x19, 0x29, 0x39 don't affect Z
+			AF.F.Z = !(new_value);
+		}
+		writeValue<writeMode, wordlength>(new_value);
 	}
-	writeValue<writeMode, wordlength>(new_value);
 }
 
 void CPU::RRCA() {
