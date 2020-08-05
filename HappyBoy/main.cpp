@@ -17,8 +17,8 @@ int main(int argc, char* argv[]) {
 	bootfile.read((char*)bootrom, 256);
 
 	//std::ifstream romfile("mooneye/acceptance/instr/daa.gb", std::ios_base::binary);
-	std::ifstream romfile("cpu_instrs.gb", std::ios_base::binary);
-	//std::ifstream romfile("blargg_cpu_instrs/04-op r,imm.gb", std::ios_base::binary);
+	//std::ifstream romfile("la.gb", std::ios_base::binary);
+	std::ifstream romfile("blargg_cpu_instrs/04-op r,imm.gb", std::ios_base::binary);
 	//std::ifstream romfile("mealybug/m3_scx_high_5_bits.gb", std::ios_base::binary);
 	romfile.seekg(0, std::ios::end);
 	size_t romlength = romfile.tellg();

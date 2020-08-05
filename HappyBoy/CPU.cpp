@@ -483,22 +483,10 @@ void CPU::OR() {
 template <AddressingMode readMode>
 void CPU::CP() {
 	uint8_t operand = getOperand<readMode>();
-	if (AF.A == operand) {
-		AF.F.Z = 1;
-		AF.F.H = 0;
-		AF.F.C = 0;
-	}
-	else if (AF.A < operand) {
-		AF.F.Z = 0;
-		AF.F.H = 0;
-		AF.F.C = 1;
-	}
-	else if (AF.A > operand) {
-		AF.F.Z = 0;
-		AF.F.H = 1;
-		AF.F.C = 0;
-	}
+	AF.F.Z = AF.A == operand;
 	AF.F.N = 1;
+	AF.F.H = (AF.A & 0x0F) - (operand & 0x0F) < 0;
+	AF.F.C = AF.A < operand;
 }
 
 template <ConditionMode mode>
