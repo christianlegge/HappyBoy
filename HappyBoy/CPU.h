@@ -62,15 +62,15 @@ public:
 	bool halted = false;
 	bool stopped = false;
 	uint16_t counter = 0x0000;
-	uint8_t TIMA;
-	uint8_t TMA;
+	uint8_t TIMA = 0x00;
+	uint8_t TMA = 0x00;
 	union {
 		struct {
 			uint8_t clockselect : 2;
 			bool running : 1;
 			uint8_t unused : 5;
 		};
-		uint8_t reg;
+		uint8_t reg = 0x00;
 	} TAC;
 private:
 	union {

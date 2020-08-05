@@ -922,10 +922,12 @@ std::vector<std::string> CPU::getRegisters()
 {
 	std::vector<std::string> registers;
 	std::stringstream s;
-	registers.push_back(registerString(BC.B, "BC.B") + registerString(BC.C, "BC.C"));
-	registers.push_back(registerString(DE.D, "DE.D") + registerString(DE.E, "DE.E"));
-	registers.push_back(registerString(HL.H, "HL.H") + registerString(HL.L, "HL.L"));
-	registers.push_back(registerString(AF.A, "AF.A") + registerString(AF.F.reg, "f"));
+	registers.push_back(registerString(BC.B, "B") + registerString(BC.C, "C"));
+	registers.push_back(registerString(DE.D, "D") + registerString(DE.E, "E"));
+	registers.push_back(registerString(HL.H, "H") + registerString(HL.L, "L"));
+	registers.push_back(registerString(AF.A, "A") + registerString(AF.F.reg, "F"));
+	registers.push_back(registerString(TIMA, "TIMA") + registerString(TMA, "TMA"));
+	registers.push_back(registerString(TAC.reg, "TAC"));
 	s << "SP: $" << std::setfill('0') << std::setw(4) << std::hex << SP << "        PC: $" << std::setfill('0') << std::setw(4) << std::hex << PC;
 	registers.push_back(s.str());
 	return registers;
