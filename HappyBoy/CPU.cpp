@@ -847,10 +847,10 @@ uint16_t CPU::tick() {
 		bool tmp2 = counter & (1 << bit);
 		if (tmp != tmp2) {
 			TIMA++;
-		}
-		if (TIMA == 0) {
-			IF.timer = true;
-			TIMA = TMA;
+			if (TIMA == 0) {
+				IF.timer = true;
+				TIMA = TMA;
+			}
 		}
 	}
 	else {
