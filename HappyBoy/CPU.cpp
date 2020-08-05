@@ -830,16 +830,16 @@ uint16_t CPU::tick() {
 		uint8_t bit;
 		switch (TAC.clockselect) {
 		case 0:
-			bit = 9;
+			bit = 10;
 			break;
 		case 1:
-			bit = 3;
+			bit = 4;
 			break;
 		case 2:
-			bit = 5;
+			bit = 6;
 			break;
 		case 3:
-			bit = 7;
+			bit = 8;
 			break;
 		}
 		bool tmp = counter & (1 << bit);
