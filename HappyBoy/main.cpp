@@ -4,6 +4,7 @@
 #include <chrono>
 #include "Screen.h"
 #include "Speaker.h"
+#include "Mappers.h"
 
 
 int main(int argc, char* argv[]) {
@@ -16,7 +17,7 @@ int main(int argc, char* argv[]) {
 	bootfile.read((char*)bootrom, 256);
 
 	//std::ifstream romfile("mooneye/acceptance/instr/daa.gb", std::ios_base::binary);
-	std::ifstream romfile("bgbtest.gb", std::ios_base::binary);
+	std::ifstream romfile("cpu_instrs.gb", std::ios_base::binary);
 	//std::ifstream romfile("blargg_cpu_instrs/04-op r,imm.gb", std::ios_base::binary);
 	//std::ifstream romfile("mealybug/m3_scx_high_5_bits.gb", std::ios_base::binary);
 	romfile.seekg(0, std::ios::end);
@@ -25,11 +26,25 @@ int main(int argc, char* argv[]) {
 	uint8_t* cart = new uint8_t[romlength];
 	romfile.read((char*)cart, romlength);
 
+	Mapper* mapper;
+	switch (cart[0x147]) {
+	case 0:
+		mapper = new Passthrough;
+		break;
+	case 1:
+		mapper = new MBC1;
+		break;
+	default:
+		throw std::logic_error{ "Unsupported mapper" };
+		break;
+	}
+	mapper->rom = cart;
+
 	std::shared_ptr<PPU> ppu = std::make_shared<PPU>();
 	std::shared_ptr<APU> apu = std::make_shared<APU>();
 	std::shared_ptr<Bus> bus = std::make_shared<Bus>(ppu, apu);
 	bus->bootrom = bootrom;
-	bus->cart = cart;
+	bus->cart = mapper;
 	ppu->bus = bus;
 	std::shared_ptr<CPU> cpu = std::make_shared<CPU>(bus);
 	ppu->cpu = cpu;

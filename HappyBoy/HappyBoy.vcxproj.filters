@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Mappers">
+      <UniqueIdentifier>{d2f3e9b0-190d-4962-8d44-d9e00b58e05e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -39,6 +42,12 @@
     <ClCompile Include="Speaker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Passthrough.cpp">
+      <Filter>Mappers</Filter>
+    </ClCompile>
+    <ClCompile Include="MBC1.cpp">
+      <Filter>Mappers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Screen.h">
@@ -60,6 +69,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Speaker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Mapper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Mappers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

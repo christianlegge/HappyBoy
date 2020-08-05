@@ -7,6 +7,7 @@
 
 #include "PPU.h"
 #include "APU.h"
+#include "Mapper.h"
 
 class CPU;
 
@@ -23,7 +24,7 @@ public:
 	std::vector<std::string> getMemory(uint16_t addr);
 	void button(GBButton button, bool pressed);
 	uint8_t ram[0x10000];
-	uint8_t* cart;
+	Mapper* cart;
 	uint8_t* bootrom;
 	std::shared_ptr<CPU> cpu;
 

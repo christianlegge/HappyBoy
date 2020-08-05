@@ -151,6 +151,8 @@
     <ClCompile Include="Clock.cpp" />
     <ClCompile Include="CPU.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MBC1.cpp" />
+    <ClCompile Include="Passthrough.cpp" />
     <ClCompile Include="PPU.cpp" />
     <ClCompile Include="Screen.cpp" />
     <ClCompile Include="Speaker.cpp" />
@@ -160,6 +162,8 @@
     <ClInclude Include="Bus.h" />
     <ClInclude Include="Clock.h" />
     <ClInclude Include="CPU.h" />
+    <ClInclude Include="Mapper.h" />
+    <ClInclude Include="Mappers.h" />
     <ClInclude Include="PPU.h" />
     <ClInclude Include="Screen.h" />
     <ClInclude Include="Speaker.h" />
