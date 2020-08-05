@@ -780,51 +780,53 @@ CPU::CPU(std::shared_ptr<Bus> bus) : bus(bus)
 }
 
 uint16_t CPU::tick() {
-	if (ime) {
-		uint16_t addr = 0;
-		if (IF.vblank && IE.vblank) {
-			addr = 0x0040;
-			IF.vblank = false;
-		}
-		else if (IF.lcdc && IE.lcdc) {
-			addr = 0x0048;
-			IF.lcdc = false;
-		}
-		else if (IF.timer && IE.timer) {
-			addr = 0x0050;
-			IF.timer = false;
-		}
-		else if (IF.serial && IE.serial) {
-			addr = 0x0058;
-			IF.serial = false;
-		}
-		else if (IF.joypad && IE.joypad) {
-			addr = 0x0060;
-			IF.joypad = false;
+	if (!halted) {
+		if (ime) {
+			uint16_t addr = 0;
+			if (IF.vblank && IE.vblank) {
+				addr = 0x0040;
+				IF.vblank = false;
+			}
+			else if (IF.lcdc && IE.lcdc) {
+				addr = 0x0048;
+				IF.lcdc = false;
+			}
+			else if (IF.timer && IE.timer) {
+				addr = 0x0050;
+				IF.timer = false;
+			}
+			else if (IF.serial && IE.serial) {
+				addr = 0x0058;
+				IF.serial = false;
+			}
+			else if (IF.joypad && IE.joypad) {
+				addr = 0x0060;
+				IF.joypad = false;
+			}
+
+			if (addr) {
+				ime = false;
+				writeBus(--SP, PC >> 8);
+				writeBus(--SP, PC & 0b11111111);
+				PC = addr;
+			}
 		}
 
-		if (addr) {
-			ime = false;
-			writeBus(--SP, PC >> 8);
-			writeBus(--SP, PC & 0b11111111);
-			PC = addr;
+		if (cyclesRemaining <= 0) {
+			uint8_t opcode = fetch();
+			if (opcode == 0xCB) {
+				uint8_t cb_opcode = fetch();
+				(this->*cb_opcode_funcs[cb_opcode])();
+				cyclesRemaining += cb_instruction_cycles[cb_opcode];
+			}
+			else {
+				(this->*opcode_funcs[opcode])();
+				cyclesRemaining += instruction_cycles[opcode];
+			}
 		}
+
+		cyclesRemaining--;
 	}
-
-	if (cyclesRemaining <= 0) {
-		uint8_t opcode = fetch();
-		if (opcode == 0xCB) {
-			uint8_t cb_opcode = fetch();
-			(this->*cb_opcode_funcs[cb_opcode])();
-			cyclesRemaining += cb_instruction_cycles[cb_opcode];
-		}
-		else {
-			(this->*opcode_funcs[opcode])();
-			cyclesRemaining += instruction_cycles[opcode];
-		}
-	}
-
-	cyclesRemaining--;
 
 	if (TAC.running) {
 		uint8_t bit;
@@ -848,7 +850,7 @@ uint16_t CPU::tick() {
 		if (tmp != tmp2) {
 			TIMA++;
 			if (TIMA == 0) {
-				IF.timer = true;
+				this->interrupt(0x0050);
 				TIMA = TMA;
 			}
 		}
@@ -942,18 +944,33 @@ void CPU::interrupt(uint16_t addr)
 {
 	if (addr == 0x0040) {
 		IF.vblank = true;
+		if (IE.vblank) {
+			halted = false;
+		}
 	}
 	else if (addr == 0x0048) {
 		IF.lcdc = true;
+		if (IE.lcdc) {
+			halted = false;
+		}
 	}
 	else if (addr == 0x0050) {
 		IF.timer = true;
+		if (IE.timer) {
+			halted = false;
+		}
 	}
 	else if (addr == 0x0058) {
 		IF.serial = true;
+		if (IE.serial) {
+			halted = false;
+		}
 	}
 	else if (addr == 0x0060) {
 		IF.joypad = true;
+		if (IE.joypad) {
+			halted = false;
+		}
 	}
 }
 
