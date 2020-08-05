@@ -84,8 +84,7 @@ T CPU::getOperand()
 		AF.F.H = (SP & 0x0F) + (operand & 0x0F) >= 0x10;
 		AF.F.Z = 0;
 		AF.F.N = 0;
-		SP += (int8_t)operand;
-		return SP;
+		return SP + (int8_t)operand;
 	}
 		break;
 	default:
