@@ -226,25 +226,11 @@ template <AddressingMode mode, class wordlength>
 void CPU::DEC()
 {
 	wordlength op = getOperand<mode, wordlength>();
-	writeValue<mode, wordlength>(--op);	
+	writeValue<mode, wordlength>(op - 1);	
 	if (!(mode == AddressingMode::RegisterBC || mode == AddressingMode::RegisterDE || mode == AddressingMode::RegisterHL || mode == AddressingMode::RegisterSP)) {
-		AF.F.N = 0;
-		if (op == 0)
-		{
-			AF.F.Z = 1;
-		}
-		else
-		{
-			AF.F.Z = 0;
-		}
-		if ((op & 0b00001111) == 0b1111)
-		{
-			AF.F.H = 1;
-		}
-		else
-		{
-			AF.F.H = 0;
-		}
+		AF.F.N = 1;
+		AF.F.Z = op == 1;
+		AF.F.H = !(op & 0x0F);
 	}
 }
 
@@ -609,7 +595,7 @@ void CPU::SLA() {
 	AF.F.H = 0;
 	AF.F.C = data & 0x80;
 	writeValue<mode>(data << 1);
-	AF.F.Z = !(data << 1);
+	AF.F.Z = !((uint8_t)(data << 1));
 }
 
 template <AddressingMode mode>
@@ -1036,144 +1022,4 @@ Instruction CPU::fetch_debug() {
 	i.opcode = opcode;
 	i.addr = addr;
 	return i;
-}
-
-void CPU::cb(uint8_t opcode)
-{
-	uint8_t bit = (opcode & 0b00111000) >> 3;
-
-	uint8_t data;
-	switch (opcode & 0b111) {
-	case 0:
-		data = BC.B;
-		break;
-	case 1:
-		data = BC.C;
-		break;
-	case 2:
-		data = DE.D;
-		break;
-	case 3:
-		data = DE.E;
-		break;
-	case 4:
-		data = HL.H;
-		break;
-	case 5:
-		data = HL.L;
-		break;
-	case 6:
-		data = readBus((HL.H << 8) + HL.L);
-		break;
-	case 7:
-		data = AF.A;
-		break;
-	}
-	int tmp;
-	if ((opcode & 0b11111000) == 0b00000000) { // RLC
-		AF.F.N = 0;
-		AF.F.H = 0;
-		AF.F.C = data & 0b10000000;
-		data = data << 1;
-		data = data | AF.F.C;
-		AF.F.Z = data == 0;
-	}
-	else if ((opcode & 0b11111000) == 0b00001000) { // RRC
-		AF.F.N = 0;
-		AF.F.H = 0;
-		AF.F.C = data & 0b00000001;
-		data = data >> 1;
-		data = data | (AF.F.C << 7);
-		AF.F.Z = data == 0;
-	}
-	else if ((opcode & 0b11111000) == 0b00010000) { // RL
-		tmp = AF.F.C;
-		AF.F.N = 0;
-		AF.F.H = 0;
-		AF.F.C = data & 0b10000000;
-		data = data << 1;
-		data = data | tmp;
-		AF.F.Z = data == 0;
-	}
-	else if ((opcode & 0b11111000) == 0b00011000) { // RR
-		tmp = AF.F.C;
-		AF.F.N = 0;
-		AF.F.H = 0;
-		AF.F.C = data & 0b00000001;
-		data = data >> 1;
-		data = data | (tmp << 7);
-		AF.F.Z = data == 0;
-	}
-	else if ((opcode & 0b11111000) == 0b00100000) { // SLA
-		AF.F.N = 0;
-		AF.F.H = 0;
-		AF.F.C = data & 0b10000000;
-		data = data << 1;
-		AF.F.Z = data == 0;
-	}
-	else if ((opcode & 0b11111000) == 0b00101000) { // SRA
-		tmp = data & 0b10000000;
-		AF.F.N = 0;
-		AF.F.H = 0;
-		AF.F.C = data & 0b00000001;
-		data = data >> 1;
-		data = data | tmp;
-		AF.F.Z = data == 0;
-	}
-	else if ((opcode & 0b11111000) == 0b00110000) { // SWAP
-		AF.F.N = 0;
-		AF.F.H = 0;
-		AF.F.C = 0;
-		tmp = data & 0b00001111;
-		data = data >> 4;
-		data = data | (tmp << 4);
-		AF.F.Z = data == 0;
-	}
-	else if ((opcode & 0b11111000) == 0b00111000) { // SRL
-
-		AF.F.N = 0;
-		AF.F.H = 0;
-		AF.F.C = data & 0b00000001;
-		data = data >> 1;
-		AF.F.Z = data == 0;
-	}
-	else if ((opcode & 0b11000000) == 0b01000000) { // BIT
-		AF.F.N = 0;
-		AF.F.H = 1;
-		AF.F.Z = data & (1 << bit);
-		AF.F.Z = 1 - AF.F.Z;
-	}
-	else if ((opcode & 0b11000000) == 0b10000000) { // RES
-		data = data & (~(1 << bit));
-	}
-	else if ((opcode & 0b11000000) == 0b11000000) { // SET
-		data = data | (1 << bit);
-	}
-
-	switch (opcode & 0b111) {
-	case 0:
-		BC.B = data;
-		break;
-	case 1:
-		BC.C = data;
-		break;
-	case 2:
-		DE.D = data;
-		break;
-	case 3:
-		DE.E = data;
-		break;
-	case 4:
-		HL.H = data;
-		break;
-	case 5:
-		HL.L = data;
-		break;
-	case 6:
-		writeBus((HL.H << 8) + HL.L, data);
-		break;
-	case 7:
-		AF.A = data;
-		break;
-	}
 }

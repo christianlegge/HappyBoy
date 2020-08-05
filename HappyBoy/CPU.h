@@ -214,8 +214,6 @@ private:
 	void SET();
 	void undefined();
 
-	void cb(uint8_t opcode);
-
 	std::string registerString(uint8_t reg, std::string name);
 
 	std::shared_ptr<Bus> bus;
