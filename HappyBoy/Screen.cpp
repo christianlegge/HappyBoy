@@ -54,25 +54,79 @@ void Screen::Start()
 					text += e.text.text;
 				}
 			}
+			else if (e.type == SDL_EventType::SDL_KEYUP) {
+				if (e.key.keysym.sym == SDLK_UP) {
+					bus->button(GBButton::Up, false);
+				}
+				else if (e.key.keysym.sym == SDLK_DOWN) {
+					bus->button(GBButton::Down, false);
+				}
+				else if (e.key.keysym.sym == SDLK_LEFT) {
+					bus->button(GBButton::Left, false);
+				}
+				else if (e.key.keysym.sym == SDLK_RIGHT) {
+					bus->button(GBButton::Right, false);
+				}
+				else if (e.key.keysym.sym == SDLK_z) {
+					bus->button(GBButton::B, false);
+				}
+				else if (e.key.keysym.sym == SDLK_x) {
+					bus->button(GBButton::A, false);
+				}
+				else if (e.key.keysym.sym == SDLK_RETURN) {
+					bus->button(GBButton::Start, false);
+				}
+				else if (e.key.keysym.sym == SDLK_RSHIFT) {
+					bus->button(GBButton::Select, false);
+				}
+			}
 			else if (e.type == SDL_EventType::SDL_KEYDOWN) {
-				if (e.key.keysym.sym == SDLK_r) {
+				if (e.key.keysym.sym == SDLK_UP) {
+					bus->button(GBButton::Up, true);
+				}
+				else if (e.key.keysym.sym == SDLK_DOWN) {
+					bus->button(GBButton::Down, true);
+				}
+				else if (e.key.keysym.sym == SDLK_LEFT) {
+					bus->button(GBButton::Left, true);
+				}
+				else if (e.key.keysym.sym == SDLK_RIGHT) {
+					bus->button(GBButton::Right, true);
+				}
+				else if (e.key.keysym.sym == SDLK_z) {
+					bus->button(GBButton::B, true);
+				}
+				else if (e.key.keysym.sym == SDLK_x) {
+					bus->button(GBButton::A, true);
+				}
+				else if (e.key.keysym.sym == SDLK_RETURN) {
+					bus->button(GBButton::Start, true);
+					if (typing) {
+						clock->breakpoint = std::stoi(text, nullptr, 0x10);
+						typing = false;
+					}
+				}
+				else if (e.key.keysym.sym == SDLK_RSHIFT) {
+					bus->button(GBButton::Select, true);
+				}
+				else if (e.key.keysym.sym == SDLK_r) {
 					cpu->reset();
 				}
-				if (e.key.keysym.sym == SDLK_SPACE) {
+				else if (e.key.keysym.sym == SDLK_SPACE) {
 					clock->step();
 					dirtyData = true;
 				}
-				if (e.key.keysym.sym == SDLK_i) {
+				else if (e.key.keysym.sym == SDLK_i) {
 					if (clock->paused) {
 						typing = !typing;
 						text = "";
 					}
 				}
-				if (e.key.keysym.sym == SDLK_f && !typing) {
+				else if (e.key.keysym.sym == SDLK_f && !typing) {
 					clock->frame();
 					dirtyData = true;
 				}
-				if (e.key.keysym.sym == SDLK_p) {
+				else if (e.key.keysym.sym == SDLK_p) {
 					clock->paused = !clock->paused;
 					if (clock->paused) {
 						SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
@@ -86,19 +140,13 @@ void Screen::Start()
 					SDL_RenderFillRect(renderer, &pause1);
 					SDL_RenderFillRect(renderer, &pause2);
 				}
-				if (e.key.keysym.sym == SDLK_PAGEDOWN) {
+				else if (e.key.keysym.sym == SDLK_PAGEDOWN) {
 					dirtyData = true;
 					addr += 0x100;
 				}
-				if (e.key.keysym.sym == SDLK_PAGEUP) {
+				else if (e.key.keysym.sym == SDLK_PAGEUP) {
 					dirtyData = true;
 					addr -= 0x100;
-				}
-				if (e.key.keysym.sym == SDLK_RETURN) {
-					if (typing) {
-						clock->breakpoint = std::stoi(text, nullptr, 0x10);
-						typing = false;
-					}
 				}
 			}
 		}

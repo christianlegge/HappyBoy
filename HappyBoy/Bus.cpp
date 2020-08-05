@@ -39,7 +39,15 @@ uint8_t Bus::read(uint16_t addr)
 		return 0xFF;
 	}
 	else if (addr == 0xFF00) {
-		return 0xFF; // Joypad input, disabled for now
+		if (!(joypad & 0x20)) {
+			return joypad & buttons.reg;
+		}
+		else if (!(joypad & 0x10)) {
+			return joypad & dpad.reg;
+		}
+		else {
+			return 0xFF;
+		}
 	}
 	else if (addr == 0xFF04) {
 		return cpu->counter >> 8;
@@ -160,7 +168,7 @@ void Bus::write(uint16_t addr, uint8_t data)
 		return;
 	}
 	else if (addr == 0xFF00) {
-		return;
+		joypad = data | 0xF;
 	}
 	else if (addr == 0xFF04) {
 		cpu->counter &= 0xFF;
@@ -289,4 +297,37 @@ std::vector<std::string> Bus::getMemory(uint16_t addr)
 		mem.push_back(s.str());
 	}
 	return mem;
+}
+
+void Bus::button(GBButton button, bool pressed)
+{
+	if (pressed) {
+		cpu->interrupt(0x60);
+	}
+	switch (button) {
+	case GBButton::Up:
+		dpad.up = !pressed;
+		break;
+	case GBButton::Down:
+		dpad.down = !pressed;
+		break;
+	case GBButton::Left:
+		dpad.left = !pressed;
+		break;
+	case GBButton::Right:
+		dpad.right = !pressed;
+		break;
+	case GBButton::B:
+		buttons.b = !pressed;
+		break;
+	case GBButton::A:
+		buttons.a = !pressed;
+		break;
+	case GBButton::Select:
+		buttons.select = !pressed;
+		break;
+	case GBButton::Start:
+		buttons.start = !pressed;
+		break;
+	}
 }
