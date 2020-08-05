@@ -313,71 +313,36 @@ void CPU::RRA() {
 }
 
 void CPU::DAA() {
+	int16_t result = AF.A;
+	AF.AF &= ~(0xFF80);
+
 	if (AF.F.N) {
-		if (AF.F.C) {
-			if (AF.F.H) {
-				AF.A += 0x9A;
-			}
-			else {
-				AF.A += 0xA0;
-			}
+		if (AF.F.H) {
+			result = (result - 0x06) & 0xFF;
 		}
-		else {
-			if (AF.F.H) {
-				AF.A += 0xFA;
-			}
-			else {
-				AF.A += 0x00;
-			}
+		if (AF.F.C) {
+			result -= 0x60;
 		}
 	}
 	else {
-		if (AF.F.C) {
-			if ((AF.A >> 4) < 0x03) {
-				if ((AF.A & 0x0F) < 0x0A) {
-					AF.A += 0x60;
-				}
-				else {
-					AF.A += 0x66;
-				}
-			}
-			else {
-				AF.A += 0x66;
-			}
+		if (AF.F.H || (result & 0x0F) > 0x09) {
+			result += 0x06;
 		}
-		else {
-			if (AF.F.H) {
-				if ((AF.A >> 4) < 0x0A) {
-					AF.A += 0x06;
-				}
-				else {
-					AF.F.C = true;
-					AF.A += 0x66;
-				}
-			}
-			else {
-				if ((AF.A & 0x0F) < 0x0A) {
-					if ((AF.A >> 4) < 0x0A) {
-						AF.A += 0x00;
-					}
-					else {
-						AF.F.C = true;
-						AF.A += 0x60;
-					}
-				}
-				else {
-					if ((AF.A >> 4) < 0x09) {
-						AF.A += 0x06;
-					}
-					else {
-						AF.F.C = true;
-						AF.A += 0x66;
-					}
-				}
-			}
+		if (AF.F.C || result > 0x9F) {
+			result += 0x60;
 		}
 	}
-	AF.F.Z = !AF.A;
+
+	if ((result & 0xFF) == 0) {
+		AF.F.Z = 1;
+	}
+
+	if ((result & 0x100) == 0x100) {
+		AF.F.C = 1;
+	}
+
+	AF.F.H = 0;
+	AF.A |= ((uint16_t)(result << 8)) >> 8;
 }
 
 void CPU::CPL() {
