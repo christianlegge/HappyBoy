@@ -5,6 +5,7 @@
 class APU
 {
 public:
+	uint8_t getSoundValue();
 	union {
 		struct {
 			uint8_t sweep_shift : 3;
