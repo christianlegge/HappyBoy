@@ -13,6 +13,10 @@ void audio_callback(void* userdata, Uint8* stream, int len)
 	if (s->apu->channel1_reset) {
 		s->apu->channel1_reset = false;
 		channel1.playing = true;
+		channel1.envelope_step = s->apu->NR12.sweep;
+		channel1.envelope_initial_volume = s->apu->NR12.volume;
+		channel1.envelope_volume = channel1.envelope_initial_volume;
+		channel1.envelope_increase = s->apu->NR12.direction;
 		channel1.start_time = s->global_time;
 		channel1.length = s->apu->NR11.sound_length;
 	}
