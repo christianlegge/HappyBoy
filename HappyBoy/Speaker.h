@@ -72,6 +72,41 @@ struct {
 	}
 } channel2;
 
+struct {
+	double length = 0;
+	double start_time;
+	double freq;
+	double period;
+	bool constant = false;
+	bool initial = false;
+	double l_volume = 0;
+	double r_volume = 0;
+	bool playing = false;
+
+	uint8_t envelope_initial_volume = 0;
+	uint8_t envelope_volume = 0;
+	uint8_t envelope_step = 0;
+	bool envelope_increase = false;
+
+	int16_t get_sample(double time) {
+		if (!playing) {
+			return 0;
+		}
+		if (time < start_time + length || constant) {
+			double volume_mod = envelope_initial_volume + (envelope_increase ? 1 : -1) * (time - start_time) / (envelope_step / 64.0);
+			volume_mod /= 15.0;
+			if (volume_mod < 0) {
+				volume_mod = 0;
+			}
+			srand(fmod(time - start_time, 1.0/freq));
+			return (rand() > 0.5) * 1000;
+		}
+		else {
+			return 0;
+		}
+	}
+} channel4;
+
 class Speaker
 {
 public:
