@@ -6,6 +6,10 @@ class APU
 {
 public:
 	uint8_t getSoundValue();
+	bool channel1_reset = false;
+	bool channel2_reset = false;
+	bool channel3_reset = false;
+	bool channel4_reset = false;
 	union {
 		struct {
 			uint8_t sweep_shift : 3;

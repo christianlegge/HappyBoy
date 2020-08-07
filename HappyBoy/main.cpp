@@ -16,9 +16,9 @@ int main(int argc, char* argv[]) {
 	unsigned char* bootrom = new unsigned char[256];
 	bootfile.read((char*)bootrom, 256);
 
-	//std::ifstream romfile("mooneye/acceptance/instr/daa.gb", std::ios_base::binary);
-	//std::ifstream romfile("drmario.gb", std::ios_base::binary);
-	std::ifstream romfile("blargg_cpu_instrs/02-interrupts.gb", std::ios_base::binary);
+	//std::ifstream romfile("mooneye/acceptance/interrupts/ie_push.gb", std::ios_base::binary);
+	std::ifstream romfile("tetris.gb", std::ios_base::binary);
+	//std::ifstream romfile("blargg_cpu_instrs/02-interrupts.gb", std::ios_base::binary);
 	//std::ifstream romfile("mealybug/m3_scx_high_5_bits.gb", std::ios_base::binary);
 	romfile.seekg(0, std::ios::end);
 	size_t romlength = romfile.tellg();

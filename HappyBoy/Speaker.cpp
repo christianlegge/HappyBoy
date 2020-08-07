@@ -10,7 +10,8 @@ void audio_callback(void* userdata, Uint8* stream, int len)
 		return;
 	}
 	double channel1_freq = 0;
-	if (!channel1.initial && s->apu->NR14.initial) {
+	if (s->apu->channel1_reset) {
+		s->apu->channel1_reset = false;
 		channel1.playing = true;
 		channel1.start_time = s->global_time;
 		channel1.length = s->apu->NR11.sound_length;
