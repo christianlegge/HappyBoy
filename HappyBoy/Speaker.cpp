@@ -26,8 +26,25 @@ void audio_callback(void* userdata, Uint8* stream, int len)
 	channel1.constant = !s->apu->NR14.counter;
 	channel1.freq = 131072.0 / (2048 - (((s->apu->NR14.reg & 0x07) << 8) + s->apu->NR13));
 
+	double channel2_freq = 0;
+	if (s->apu->channel2_reset) {
+		s->apu->channel2_reset = false;
+		channel2.playing = true;
+		channel2.envelope_step = s->apu->NR22.sweep;
+		channel2.envelope_initial_volume = s->apu->NR22.volume;
+		channel2.envelope_volume = channel2.envelope_initial_volume;
+		channel2.envelope_increase = s->apu->NR22.direction;
+		channel2.start_time = s->global_time;
+		channel2.length = s->apu->NR21.length;
+	}
+	channel2.l_volume = s->apu->NR51.sound2_to_so1 ? s->apu->NR50.so1_volume : 0;
+	channel2.r_volume = s->apu->NR51.sound2_to_so2 ? s->apu->NR50.so2_volume : 0;
+	channel2.initial = s->apu->NR24.initial;
+	channel2.constant = !s->apu->NR24.counter;
+	channel2.freq = 131072.0 / (2048 - (((s->apu->NR24.reg & 0x07) << 8) + s->apu->NR23));
+
 	for (int i = 0; i < len / 2; i++) {
-		((Uint16*)stream)[i] = channel1.get_sample(s->global_time);
+		((Uint16*)stream)[i] = channel1.get_sample(s->global_time) + channel2.get_sample(s->global_time);
 		s->global_time += s->time_step;
 	}
 }
