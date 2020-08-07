@@ -83,24 +83,31 @@ void Screen::Start()
 			else if (e.type == SDL_EventType::SDL_KEYDOWN) {
 				if (e.key.keysym.sym == SDLK_UP) {
 					bus->button(GBButton::Up, true);
+					cpu->interrupt(0x0060);
 				}
 				else if (e.key.keysym.sym == SDLK_DOWN) {
 					bus->button(GBButton::Down, true);
+					cpu->interrupt(0x0060);
 				}
 				else if (e.key.keysym.sym == SDLK_LEFT) {
 					bus->button(GBButton::Left, true);
+					cpu->interrupt(0x0060);
 				}
 				else if (e.key.keysym.sym == SDLK_RIGHT) {
 					bus->button(GBButton::Right, true);
+					cpu->interrupt(0x0060);
 				}
 				else if (e.key.keysym.sym == SDLK_z) {
 					bus->button(GBButton::B, true);
+					cpu->interrupt(0x0060);
 				}
 				else if (e.key.keysym.sym == SDLK_x) {
 					bus->button(GBButton::A, true);
+					cpu->interrupt(0x0060);
 				}
 				else if (e.key.keysym.sym == SDLK_RETURN) {
 					bus->button(GBButton::Start, true);
+					cpu->interrupt(0x0060);
 					if (typing) {
 						clock->breakpoint = std::stoi(text, nullptr, 0x10);
 						typing = false;
@@ -108,6 +115,7 @@ void Screen::Start()
 				}
 				else if (e.key.keysym.sym == SDLK_RSHIFT) {
 					bus->button(GBButton::Select, true);
+					cpu->interrupt(0x0060);
 				}
 				else if (e.key.keysym.sym == SDLK_r) {
 					cpu->reset();
