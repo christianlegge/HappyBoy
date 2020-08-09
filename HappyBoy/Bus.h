@@ -23,12 +23,12 @@ public:
 	void write(uint16_t addr, uint8_t data);
 	std::vector<std::string> getMemory(uint16_t addr);
 	void button(GBButton button, bool pressed);
-	uint8_t ram[0x10000];
 	Mapper* cart;
 	uint8_t* bootrom;
 	std::shared_ptr<CPU> cpu;
 
 private:
+	uint8_t ram[0x10000];
 	std::shared_ptr<PPU> ppu;
 	std::shared_ptr<APU> apu;
 	bool bootRomControl = false;
