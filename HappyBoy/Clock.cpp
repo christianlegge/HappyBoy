@@ -2,6 +2,8 @@
 
 Clock::Clock(std::shared_ptr<CPU> cpu, std::shared_ptr<PPU> ppu, std::shared_ptr<APU> apu) : cpu(cpu), ppu(ppu), apu(apu)
 {
+	frame_time = 1 / 59.7;
+	last_frame = std::chrono::steady_clock::now();
 }
 
 void Clock::tick()
@@ -11,6 +13,13 @@ void Clock::tick()
 			paused = true;
 		}
 		ppu->tick();
+	}
+	if (ppu->frameComplete()) {
+		std::chrono::duration<float> diff = std::chrono::steady_clock::now() - last_frame;
+		while (diff.count() < frame_time) {
+			diff = std::chrono::steady_clock::now() - last_frame;
+		}
+		last_frame = std::chrono::steady_clock::now();
 	}
 }
 

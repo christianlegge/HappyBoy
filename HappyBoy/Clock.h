@@ -1,5 +1,6 @@
 #pragma once
 
+#include <chrono>
 #include <memory>
 
 #include "CPU.h"
@@ -20,5 +21,7 @@ private:
 	std::shared_ptr<PPU> ppu;
 	std::shared_ptr<APU> apu;
 	bool doStep = false;
+	std::chrono::steady_clock::time_point last_frame;
+	float frame_time;
 };
 
