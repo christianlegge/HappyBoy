@@ -210,80 +210,107 @@ void Bus::write(uint16_t addr, uint8_t data)
 		else if (addr == 0xFF0F) {
 			cpu->IF.reg = data;
 		}
-		else if (addr == 0xFF10) {
-			apu->NR10.reg = data;
-		}
-		else if (addr == 0xFF11) {
-			apu->NR11.reg = data;
-		}
-		else if (addr == 0xFF12) {
-			apu->NR12.reg = data;
-		}
-		else if (addr == 0xFF13) {
-			apu->NR13 = data;
-		}
-		else if (addr == 0xFF14) {
-			apu->NR14.reg = data;
-			if (apu->NR14.initial) {
-				apu->channel1_reset = true;
+		else if (0xFF10 <= addr && addr < 0xFF26) {
+			if (!apu->NR52.allsound_on) {
+				return;
 			}
-		}
-		else if (addr == 0xFF16) {
-			apu->NR21.reg = data;
-		}
-		else if (addr == 0xFF17) {
-			apu->NR22.reg = data;
-		}
-		else if (addr == 0xFF18) {
-			apu->NR23 = data;
-		}
-		else if (addr == 0xFF19) {
-			apu->NR24.reg = data;
-			if (apu->NR24.initial) {
-				apu->channel2_reset = true;
+			if (addr == 0xFF10) {
+				apu->NR10.reg = data;
 			}
-		}
-		else if (addr == 0xFF1A) {
-			apu->NR30.reg = data;
-		}
-		else if (addr == 0xFF1B) {
-			apu->NR31 = data;
-		}
-		else if (addr == 0xFF1C) {
-			apu->NR32.reg = data;
-		}
-		else if (addr == 0xFF1D) {
-			apu->NR33 = data;
-		}
-		else if (addr == 0xFF1E) {
-			apu->NR34.reg = data;
-			if (apu->NR34.initial) {
-				apu->channel3_reset = true;
+			else if (addr == 0xFF11) {
+				apu->NR11.reg = data;
 			}
-		}
-		else if (addr == 0xFF20) {
-			apu->NR41.reg = data;
-		}
-		else if (addr == 0xFF21) {
-			apu->NR42.reg = data;
-		}
-		else if (addr == 0xFF22) {
-			apu->NR43.reg = data;
-		}
-		else if (addr == 0xFF23) {
-			apu->NR44.reg = data;
-			if (apu->NR44.initial) {
-				apu->channel4_reset = true;
+			else if (addr == 0xFF12) {
+				apu->NR12.reg = data;
 			}
-		}
-		else if (addr == 0xFF24) {
-			apu->NR50.reg = data;
-		}
-		else if (addr == 0xFF25) {
-			apu->NR51.reg = data;
+			else if (addr == 0xFF13) {
+				apu->NR13 = data;
+			}
+			else if (addr == 0xFF14) {
+				apu->NR14.reg = data;
+				if (apu->NR14.initial) {
+					apu->channel1_reset = true;
+				}
+			}
+			else if (addr == 0xFF16) {
+				apu->NR21.reg = data;
+			}
+			else if (addr == 0xFF17) {
+				apu->NR22.reg = data;
+			}
+			else if (addr == 0xFF18) {
+				apu->NR23 = data;
+			}
+			else if (addr == 0xFF19) {
+				apu->NR24.reg = data;
+				if (apu->NR24.initial) {
+					apu->channel2_reset = true;
+				}
+			}
+			else if (addr == 0xFF1A) {
+				apu->NR30.reg = data;
+			}
+			else if (addr == 0xFF1B) {
+				apu->NR31 = data;
+			}
+			else if (addr == 0xFF1C) {
+				apu->NR32.reg = data;
+			}
+			else if (addr == 0xFF1D) {
+				apu->NR33 = data;
+			}
+			else if (addr == 0xFF1E) {
+				apu->NR34.reg = data;
+				if (apu->NR34.initial) {
+					apu->channel3_reset = true;
+				}
+			}
+			else if (addr == 0xFF20) {
+				apu->NR41.reg = data;
+			}
+			else if (addr == 0xFF21) {
+				apu->NR42.reg = data;
+			}
+			else if (addr == 0xFF22) {
+				apu->NR43.reg = data;
+			}
+			else if (addr == 0xFF23) {
+				apu->NR44.reg = data;
+				if (apu->NR44.initial) {
+					apu->channel4_reset = true;
+				}
+			}
+			else if (addr == 0xFF24) {
+				apu->NR50.reg = data;
+			}
+			else if (addr == 0xFF25) {
+				apu->NR51.reg = data;
+			}
 		}
 		else if (addr == 0xFF26) {
 			apu->NR52.allsound_on = data & 0x80;
+			if (!(data & 0x80)) {
+				apu->NR10.reg = 0;
+				apu->NR11.reg = 0;
+				apu->NR12.reg = 0;
+				apu->NR13 = 0;
+				apu->NR14.reg = 0;
+				apu->NR21.reg = 0;
+				apu->NR22.reg = 0;
+				apu->NR23 = 0;
+				apu->NR24.reg = 0;
+				apu->NR30.reg = 0;
+				apu->NR31 = 0;
+				apu->NR32.reg = 0;
+				apu->NR33 = 0;
+				apu->NR34.reg = 0;
+				//apu->NR41.reg = 0;
+				apu->NR42.reg = 0;
+				apu->NR43.reg = 0;
+				apu->NR44.reg = 0;
+				apu->NR50.reg = 0;
+				apu->NR51.reg = 0;
+			}
 		}
 		else if (0xFF30 <= addr && addr < 0xFF40) {
 			apu->waveram[addr & 0x0F] = data;
