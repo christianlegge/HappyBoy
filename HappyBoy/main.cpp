@@ -6,6 +6,69 @@
 #include "Speaker.h"
 #include "Mappers.h"
 
+uint8_t getRomBanks(uint8_t code) {
+	switch (code) {
+	case 0x00:
+		return 0;
+		break;
+	case 0x01:
+		return 4;
+		break;
+	case 0x02:
+		return 8;
+		break;
+	case 0x03:
+		return 16;
+		break;
+	case 0x04:
+		return 32;
+		break;
+	case 0x05:
+		return 64;
+		break;
+	case 0x06:
+		return 128;
+		break;
+	case 0x07:
+		return 256;
+		break;
+	case 0x08:
+		return 512;
+		break;
+	case 0x52:
+		return 72;
+		break;
+	case 0x53:
+		return 80;
+		break;
+	case 0x54:
+		return 96;
+		break;
+	}
+}
+
+size_t getRamSize(uint8_t code) {
+	switch (code) {
+	case 0x00:
+		return 0;
+		break;
+	case 0x01:
+		return 0x800;
+		break;
+	case 0x02:
+		return 0x2000;
+		break;
+	case 0x03:
+		return 0x8000;
+		break;
+	case 0x04:
+		return 0x20000;
+		break;
+	case 0x05:
+		return 0x10000;
+		break;
+	}
+}
 
 int main(int argc, char* argv[]) {
 	if (argc != 3) {
@@ -17,8 +80,8 @@ int main(int argc, char* argv[]) {
 	bootfile.read((char*)bootrom, 256);
 
 	//std::ifstream romfile("mooneye/acceptance/interrupts/ie_push.gb", std::ios_base::binary);
-	std::ifstream romfile("tetris.gb", std::ios_base::binary);
-	//std::ifstream romfile("blargg_cpu_instrs/02-interrupts.gb", std::ios_base::binary);
+	std::ifstream romfile("la.gb", std::ios_base::binary);
+	//std::ifstream romfile("blargg_dmg_sound/01-registers.gb", std::ios_base::binary);
 	//std::ifstream romfile("mealybug/m3_scx_high_5_bits.gb", std::ios_base::binary);
 	romfile.seekg(0, std::ios::end);
 	size_t romlength = romfile.tellg();
@@ -26,19 +89,23 @@ int main(int argc, char* argv[]) {
 	uint8_t* cart = new uint8_t[romlength];
 	romfile.read((char*)cart, romlength);
 
+	uint8_t rom_banks = getRomBanks(cart[0x0148]);
+	size_t cart_ram_size = getRamSize(cart[0x0149]);
+
 	Mapper* mapper;
 	switch (cart[0x147]) {
 	case 0:
-		mapper = new Passthrough;
+		mapper = new Passthrough(cart);
 		break;
 	case 1:
-		mapper = new MBC1;
+	case 2:
+	case 3:
+		mapper = new MBC1(cart, rom_banks, cart_ram_size);
 		break;
 	default:
 		throw std::logic_error{ "Unsupported mapper" };
 		break;
 	}
-	mapper->rom = cart;
 
 	std::shared_ptr<PPU> ppu = std::make_shared<PPU>();
 	std::shared_ptr<APU> apu = std::make_shared<APU>();
