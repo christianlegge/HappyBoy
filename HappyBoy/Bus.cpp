@@ -70,10 +70,10 @@ uint8_t Bus::read(uint16_t addr)
 			return cpu->IF.reg;
 		}
 		else if (addr == 0xFF10) {
-			return apu->NR10.reg;
+			return apu->NR10.reg | 0x80;
 		}
 		else if (addr == 0xFF11) {
-			return apu->NR11.reg;
+			return apu->NR11.reg | 0x3F;
 		}
 		else if (addr == 0xFF12) {
 			return apu->NR12.reg;
@@ -82,10 +82,10 @@ uint8_t Bus::read(uint16_t addr)
 			return 0xFF;
 		}
 		else if (addr == 0xFF14) {
-			return apu->NR14.reg;
+			return apu->NR14.reg | 0xBF;
 		}
 		else if (addr == 0xFF16) {
-			return apu->NR21.reg;
+			return apu->NR21.reg | 0x3F;
 		}
 		else if (addr == 0xFF17) {
 			return apu->NR22.reg;
@@ -94,25 +94,25 @@ uint8_t Bus::read(uint16_t addr)
 			return 0xFF;
 		}
 		else if (addr == 0xFF19) {
-			return apu->NR24.reg;
+			return apu->NR24.reg | 0xBF;
 		}
 		else if (addr == 0xFF1A) {
-			return apu->NR30.reg;
+			return apu->NR30.reg | 0x7F;
 		}
 		else if (addr == 0xFF1B) {
-			return apu->NR31;
+			return 0xFF;
 		}
 		else if (addr == 0xFF1C) {
-			return apu->NR32.reg;
+			return apu->NR32.reg | 0x9F;
 		}
 		else if (addr == 0xFF1D) {
 			return 0xFF;
 		}
 		else if (addr == 0xFF1E) {
-			return apu->NR34.reg;
+			return apu->NR34.reg | 0xBF;
 		}
 		else if (addr == 0xFF20) {
-			return apu->NR41.reg;
+			return 0xFF;
 		}
 		else if (addr == 0xFF21) {
 			return apu->NR42.reg;
@@ -121,7 +121,7 @@ uint8_t Bus::read(uint16_t addr)
 			return apu->NR43.reg;
 		}
 		else if (addr == 0xFF23) {
-			return apu->NR44.reg;
+			return apu->NR44.reg | 0xBF;
 		}
 		else if (addr == 0xFF24) {
 			return apu->NR50.reg;
@@ -130,7 +130,7 @@ uint8_t Bus::read(uint16_t addr)
 			return apu->NR51.reg;
 		}
 		else if (addr == 0xFF26) {
-			return apu->NR52.reg;
+			return apu->NR52.reg | 0x70;
 		}
 		else if (addr == 0xFF40) {
 			return ppu->LCDC.reg;
@@ -153,6 +153,9 @@ uint8_t Bus::read(uint16_t addr)
 		else if (addr == 0xFF47) {
 			return ppu->BGP.reg;
 		}
+		else {
+		return 0xFF;
+}
 	}
 	else if (0xFF80 <= addr && addr < 0xFFFF) {
 	    return ram[addr];
