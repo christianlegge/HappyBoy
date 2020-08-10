@@ -283,7 +283,7 @@ void Bus::write(uint16_t addr, uint8_t data)
 			apu->NR51.reg = data;
 		}
 		else if (addr == 0xFF26) {
-			apu->NR52.reg |= data & 0x80;
+			apu->NR52.allsound_on = data & 0x80;
 		}
 		else if (0xFF30 <= addr && addr < 0xFF40) {
 			apu->waveram[addr & 0x0F] = data;
