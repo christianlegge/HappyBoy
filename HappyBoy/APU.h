@@ -97,6 +97,7 @@ public:
 		};
 		uint8_t reg;
 	} NR34;
+	uint8_t waveram[0x0F];
 
 	union {
 		struct {

@@ -132,6 +132,9 @@ uint8_t Bus::read(uint16_t addr)
 		else if (addr == 0xFF26) {
 			return apu->NR52.reg | 0x70;
 		}
+		else if (0xFF30 <= addr && addr < 0xFF40) {
+			return apu->waveram[addr & 0x0F];
+		}
 		else if (addr == 0xFF40) {
 			return ppu->LCDC.reg;
 		}
@@ -281,6 +284,9 @@ void Bus::write(uint16_t addr, uint8_t data)
 		}
 		else if (addr == 0xFF26) {
 			apu->NR52.reg |= data & 0x80;
+		}
+		else if (0xFF30 <= addr && addr < 0xFF40) {
+			apu->waveram[addr & 0x0F] = data;
 		}
 		else if (addr == 0xFF40) {
 			ppu->LCDC.reg = data;
