@@ -127,7 +127,7 @@ private:
 
 		int8_t size() {
 			int8_t dist = rightbound - leftbound;
-			if (dist < 0) {
+			if (dist <= 0) {
 				dist += 16;
 			}
 			return dist - 1;

@@ -17,10 +17,11 @@ void PPU::tick()
 	if (LY < 144 && 0 <= screenx && screenx < 160) {
 		STAT.screenmode = 3;
 
-		if (pixel_fifo.size() < 8) {
+		uint8_t SCX_consumed = 0;
+		while (pixel_fifo.size() < 8) {
 			uint16_t mapaddr = LCDC.bgtilemap ? 0x9C00 : 0x9800;
 			uint16_t setaddr = LCDC.bgtileset ? 0x8000 : 0x8800;
-			int tilex = (uint8_t)(fetch_x + SCX) / 8;
+			int tilex = fetch_x / 8;
 			int tiley = (uint8_t)(LY + SCY) / 8;
 			int tilenum = read(mapaddr + tiley * 32 + tilex);
 
@@ -37,6 +38,12 @@ void PPU::tick()
 			}
 
 			fetch_x += 8;
+
+			if (screenx == 0) {
+				for (int i = 0; i < 8 && SCX_consumed != SCX; i++, SCX_consumed++) {
+					pixel_fifo.pop();
+				}
+			}
 		}
 		
 		Sprite* s = nullptr;
