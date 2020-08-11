@@ -40,10 +40,24 @@ void PPU::tick()
 		}
 		
 		Sprite* s = nullptr;
-		for (int i = 0; i < 10; i++) {
-			if (sprites_for_scanline[i].xpos <= screenx && screenx < sprites_for_scanline[i].xpos + 8) {
+		for (int i = 0; i < num_sprites_in_line; i++) {
+			if ((sprites_for_scanline[i].xpos - 8) == screenx) {
 				s = &sprites_for_scanline[i];
 			}
+		}
+		if (s) {
+			Pixel p[8];
+			uint16_t setaddr = 0x8000;
+
+			int line = (uint8_t)(LY - (s->ypos - 16));
+			uint8_t linedata1 = read(setaddr + s->tile * 16 + line * 2);
+			uint8_t linedata2 = read(setaddr + 1 + s->tile * 16 + line * 2);
+			for (int i = 0; i < 8; i++) {
+				uint8_t color = ((linedata1 & (1 << (7 - i))) ? 2 : 0) | ((linedata2 & (1 << (7 - i))) ? 1 : 0);
+				p[i] = { color, 1 };
+			}
+			pixel_fifo.mix_sprite(p);
+
 		}
 
 		Palette pal;
@@ -88,14 +102,13 @@ void PPU::tick()
 		}
 
 		Sprite* oam = (Sprite*)bus->getOamPointer();
-		uint8_t sprite_index = 0;
+		num_sprites_in_line = 0;
 		for (int i = 0; i < 40; i++) {
 			Sprite s = oam[i];
 			uint8_t height = LCDC.spritesize ? 16 : 8;
-			if (s.ypos <= LY && LY < s.ypos + height) {
-				sprites_for_scanline[sprite_index] = s;
-				sprite_index++;
-				if (sprite_index >= 10) {
+			if ((s.ypos - 16) <= LY && LY < (s.ypos - 16) + height) {
+				sprites_for_scanline[num_sprites_in_line++] = s;
+				if (num_sprites_in_line >= 10) {
 					break;
 				}
 			}

@@ -95,6 +95,7 @@ private:
 	int screenx = -1;
 	uint8_t fetch_x = 0;
 	Sprite sprites_for_scanline[10];
+	uint8_t num_sprites_in_line;
 	Color screen[160 * 144];
 #if 0
 	Color index[4] = { { 255, 255, 255 }, { 170, 170, 170 } ,{ 85, 85, 85 } ,{ 0, 0, 0 } };

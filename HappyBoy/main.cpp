@@ -80,7 +80,7 @@ int main(int argc, char* argv[]) {
 	bootfile.read((char*)bootrom, 256);
 
 	//std::ifstream romfile("mooneye/acceptance/interrupts/ie_push.gb", std::ios_base::binary);
-	std::ifstream romfile("tetris.gb", std::ios_base::binary);
+	std::ifstream romfile("sml.gb", std::ios_base::binary);
 	//std::ifstream romfile("blargg_dmg_sound/01-registers.gb", std::ios_base::binary);
 	//std::ifstream romfile("mealybug/m3_scx_high_5_bits.gb", std::ios_base::binary);
 	romfile.seekg(0, std::ios::end);
