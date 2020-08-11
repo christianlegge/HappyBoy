@@ -156,9 +156,15 @@ uint8_t Bus::read(uint16_t addr)
 		else if (addr == 0xFF47) {
 			return ppu->BGP.reg;
 		}
+		else if (addr == 0xFF48) {
+			return ppu->OBP0.reg;
+		}
+		else if (addr == 0xFF49) {
+			return ppu->OBP1.reg;
+		}
 		else {
-		return 0xFF;
-}
+			return 0xFF;
+		}
 	}
 	else if (0xFF80 <= addr && addr < 0xFFFF) {
 	    return ram[addr];
@@ -339,6 +345,12 @@ void Bus::write(uint16_t addr, uint8_t data)
 		else if (addr == 0xFF47) {
 			ppu->BGP.reg = data;
 		}
+		else if (addr == 0xFF48) {
+			ppu->OBP0.reg = data;
+		}
+		else if (addr == 0xFF49) {
+			ppu->OBP1.reg = data;
+		}
 		else if (addr == 0xFF50) {
 			bootRomControl = data;
 		}
@@ -398,4 +410,9 @@ void Bus::button(GBButton button, bool pressed)
 		buttons.start = !pressed;
 		break;
 	}
+}
+
+uint8_t* Bus::getOamPointer()
+{
+	return ram+0xFE00;
 }

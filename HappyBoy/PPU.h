@@ -7,16 +7,48 @@ class Bus;
 class CPU;
 
 typedef struct {
+	uint8_t ypos;
+	uint8_t xpos;
+	uint8_t tile;
+	union {
+		struct {
+			bool priority : 1;
+			bool yflip : 1;
+			bool xflip : 1;
+			bool dmg_palette : 1;
+			bool bank : 1;
+			uint8_t cgb_palette : 3;
+		};
+		uint8_t reg;
+	} flags;
+} Sprite;
+
+typedef struct {
 	uint8_t r;
 	uint8_t g;
 	uint8_t b;
-} color;
+} Color;
+
+typedef struct {
+	uint8_t color : 2;
+	uint8_t source : 4; // BG = 0
+} Pixel;
+
+typedef union {
+	struct {
+		uint8_t c0 : 2;
+		uint8_t c1 : 2;
+		uint8_t c2 : 2;
+		uint8_t c3 : 2;
+	};
+	uint8_t reg;
+} Palette;
 
 class PPU
 {
 public:
 	void tick();
-	color* getScreen();
+	Color* getScreen();
 	bool frameComplete();
 	bool getScreenFrameReady();
 	union {
@@ -34,15 +66,9 @@ public:
 	} LCDC;
 	uint8_t LY;
 	uint8_t LYC;
-	union {
-		struct {
-			uint8_t c0 : 2;
-			uint8_t c1 : 2;
-			uint8_t c2 : 2;
-			uint8_t c3 : 2;
-		};
-		uint8_t reg = 0xE4;
-	} BGP;
+	Palette BGP;
+	Palette OBP0;
+	Palette OBP1;
 	union {
 		struct {
 			uint8_t screenmode : 2;
@@ -62,18 +88,63 @@ public:
 	uint8_t WX;
 	std::shared_ptr<Bus> bus;
 	std::shared_ptr<CPU> cpu;
-	void getTileset(color* tileset);
-	void getTilemap(color* tilemap);
+	void getTileset(Color* tileset);
+	void getTilemap(Color* tilemap);
 private:
 	int cycles = 0;
 	int screenx = -1;
-	color screen[160 * 144];
+	uint8_t fetch_x = 0;
+	Sprite sprites_for_scanline[10];
+	Color screen[160 * 144];
 #if 0
-	color index[4] = { { 255, 255, 255 }, { 170, 170, 170 } ,{ 85, 85, 85 } ,{ 0, 0, 0 } };
+	Color index[4] = { { 255, 255, 255 }, { 170, 170, 170 } ,{ 85, 85, 85 } ,{ 0, 0, 0 } };
 #else
-	color index[4] = { { 155, 188, 18 }, { 139, 172, 15 } ,{ 48, 98, 48 } ,{ 15, 56, 15 } };
+	Color index[4] = { { 155, 188, 18 }, { 139, 172, 15 } ,{ 48, 98, 48 } ,{ 15, 56, 15 } };
 #endif
 	uint8_t read(uint16_t addr);
 	bool screenFrameReady = false;
+	struct {
+		uint8_t leftbound = 15;
+		uint8_t rightbound = 0;
+		Pixel pixels[16];
+
+		void push(Pixel p) {
+			if (rightbound == leftbound) {
+				return;
+			}
+			pixels[rightbound] = p;
+			rightbound = (rightbound + 1) % 16;
+		}
+
+		Pixel pop() {
+			if ((leftbound + 1) % 16 == rightbound) {
+				return { 0, 0 };
+			}
+			leftbound = (leftbound + 1) % 16;
+			return pixels[leftbound];
+		}
+
+		int8_t size() {
+			int8_t dist = rightbound - leftbound;
+			if (dist < 0) {
+				dist += 16;
+			}
+			return dist - 1;
+		}
+
+		void clear() {
+			while (size() > 0) {
+				leftbound = (leftbound + 1) % 16;
+			}
+		}
+
+		void mix_sprite(Pixel sprite[]) {
+			for (int i = 0; i < 8; i++) {
+				if (sprite[i].color != 0) {
+					pixels[(leftbound + 1 + i) % 16] = sprite[i];
+				}
+			}
+		}
+	} pixel_fifo;
 };
 

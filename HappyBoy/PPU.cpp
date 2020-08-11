@@ -16,45 +16,59 @@ void PPU::tick()
 
 	if (LY < 144 && 0 <= screenx && screenx < 160) {
 		STAT.screenmode = 3;
-		uint16_t mapaddr = LCDC.bgtilemap ? 0x9C00 : 0x9800;
-		uint16_t setaddr = LCDC.bgtileset ? 0x8000 : 0x8800;
-		int tilex = (uint8_t)(screenx + SCX) / 8;
-		int tiley = (uint8_t)(LY + SCY) / 8;
-		int tilenum = read(mapaddr + tiley * 32 + tilex);
-		/*if (mapaddr == 0x9c00) {
-			int x = 0;
-		}
-		if (tilenum == 1) {
-			int x = 0;
-		}*/
-		if (setaddr == 0x8800) {
-			tilenum += 128;
-		}
-		int line = (uint8_t)(LY + SCY) % 8;
 
-		uint8_t linedata1 = read(setaddr + tilenum * 16 + line * 2);
-		uint8_t linedata2 = read(setaddr + 1 + tilenum * 16 + line * 2);
-		int col = (uint8_t)(screenx + SCX) % 8;
+		if (pixel_fifo.size() < 8) {
+			uint16_t mapaddr = LCDC.bgtilemap ? 0x9C00 : 0x9800;
+			uint16_t setaddr = LCDC.bgtileset ? 0x8000 : 0x8800;
+			int tilex = (uint8_t)(fetch_x + SCX) / 8;
+			int tiley = (uint8_t)(LY + SCY) / 8;
+			int tilenum = read(mapaddr + tiley * 32 + tilex);
 
-		int color = ((linedata1 & (1 << (7 - col))) ? 2 : 0) + ((linedata2 & (1 << (7 - col))) ? 1 : 0);
-		if (color != 0) {
-			int asdasd = 0;
+			if (setaddr == 0x8800) {
+				tilenum += 128;
+			}
+
+			int line = (uint8_t)(LY + SCY) % 8;
+			uint8_t linedata1 = read(setaddr + tilenum * 16 + line * 2);
+			uint8_t linedata2 = read(setaddr + 1 + tilenum * 16 + line * 2);
+			for (int i = 0; i < 8; i++) {
+				uint8_t color = ((linedata1 & (1 << (7 - i))) ? 2 : 0) | ((linedata2 & (1 << (7 - i))) ? 1 : 0);
+				pixel_fifo.push({color, 0});
+			}
+
+			fetch_x += 8;
 		}
-		switch (color) {
+		
+		Sprite* s = nullptr;
+		for (int i = 0; i < 10; i++) {
+			if (sprites_for_scanline[i].xpos <= screenx && screenx < sprites_for_scanline[i].xpos + 8) {
+				s = &sprites_for_scanline[i];
+			}
+		}
+
+		Palette pal;
+		Pixel p = pixel_fifo.pop();
+		if (p.source == 0) {
+			pal = BGP;
+		}
+		else {
+			pal = sprites_for_scanline[p.source - 1].flags.dmg_palette ? OBP1 : OBP0;
+		}
+
+		switch (p.color) {
 		case 0:
-			color = BGP.c0;
+			screen[LY * 160 + screenx] = index[pal.c0];
 			break;
 		case 1:
-			color = BGP.c1;
+			screen[LY * 160 + screenx] = index[pal.c1];
 			break;
 		case 2:
-			color = BGP.c2;
+			screen[LY * 160 + screenx] = index[pal.c2];
 			break;
 		case 3:
-			color = BGP.c3;
+			screen[LY * 160 + screenx] = index[pal.c3];
 			break;
 		}
-		screen[LY * 160 + screenx] = index[color];
 	}
 
 	cycles++;
@@ -62,18 +76,36 @@ void PPU::tick()
 	if (cycles > (20 + 43 + 51) * 4) {
 		cycles = 0;
 		screenx = -1;
-
 		LY++;
 		STAT.screenmode = 2;
+		fetch_x = 0;
+		pixel_fifo.clear();
+
+		if (LY > 154) {
+			screenFrameReady = true;
+			LY = 0;
+			STAT.screenmode = 2;
+		}
+
+		Sprite* oam = (Sprite*)bus->getOamPointer();
+		uint8_t sprite_index = 0;
+		for (int i = 0; i < 40; i++) {
+			Sprite s = oam[i];
+			uint8_t height = LCDC.spritesize ? 16 : 8;
+			if (s.ypos <= LY && LY < s.ypos + height) {
+				sprites_for_scanline[sprite_index] = s;
+				sprite_index++;
+				if (sprite_index >= 10) {
+					break;
+				}
+			}
+
+		}
+
 		if (LY == 144) {
 			cpu->interrupt(0x0040);
 			STAT.screenmode = 3;
 		}
-	}
-	if (LY > 154) {
-		screenFrameReady = true;
-		LY = 0;
-		STAT.screenmode = 2;
 	}
 
 	bool tmp = stat_irq;
@@ -86,7 +118,7 @@ void PPU::tick()
 	}
 }
 
-color* PPU::getScreen()
+Color* PPU::getScreen()
 {
 	return screen;
 }
@@ -105,7 +137,7 @@ bool PPU::getScreenFrameReady()
 	return false;
 }
 
-void PPU::getTileset(color* tileset)
+void PPU::getTileset(Color* tileset)
 {
 	for (int tilex = 0; tilex < 16; tilex++) {
 		for (int tiley = 0; tiley < 24; tiley++) {
@@ -124,7 +156,7 @@ void PPU::getTileset(color* tileset)
 	}
 }
 
-void PPU::getTilemap(color* tilemap)
+void PPU::getTilemap(Color* tilemap)
 {
 	uint16_t mapaddr = LCDC.bgtilemap ? 0x9C00 : 0x9800;
 	uint16_t setaddr = LCDC.bgtileset ? 0x8000 : 0x8800;
@@ -149,5 +181,3 @@ uint8_t PPU::read(uint16_t addr)
 {
 	return bus->read(addr);
 }
-
-

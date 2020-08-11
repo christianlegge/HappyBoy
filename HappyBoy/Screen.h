@@ -25,8 +25,8 @@ private:
 	SDL_Rect screen_rect;
 	uint8_t* screen_pixels;
 	TTF_Font* font;
-	color* tileset;
-	color* tilemap;
+	Color* tileset;
+	Color* tilemap;
 	std::shared_ptr<Clock> clock;
 	std::shared_ptr<CPU> cpu;
 	std::shared_ptr<Bus> bus;

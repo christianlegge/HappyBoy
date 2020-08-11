@@ -27,8 +27,8 @@ void Screen::Start()
 	bool quit = false;
 	SDL_Event e;
 
-	tileset = new color[384 * 64];
-	tilemap = new color[32 * 32 * 64];
+	tileset = new Color[384 * 64];
+	tilemap = new Color[32 * 32 * 64];
 	uint16_t addr = 0x9800;
 
 	SDL_Color white = { 255, 255, 255, 255 };
