@@ -17,19 +17,26 @@ void PPU::tick()
 	if (LY < 144 && 0 <= screenx && screenx < 160) {
 		STAT.screenmode = 3;
 
+		/*if (screenx == WX && LY >= WY && LCDC.window) {
+			pixel_fifo.clear();
+			fetch_x = 0;
+			drawing_window = true;
+		}*/
+
 		uint8_t SCX_consumed = 0;
 		while (pixel_fifo.size() < 8) {
-			uint16_t mapaddr = LCDC.bgtilemap ? 0x9C00 : 0x9800;
+			uint16_t mapaddr = drawing_window ? (LCDC.windowtilemap ? 0x9C00 : 0x9800) : (LCDC.bgtilemap ? 0x9C00 : 0x9800);
 			uint16_t setaddr = LCDC.bgtileset ? 0x8000 : 0x8800;
+			uint8_t scanline = drawing_window ? LY - WY : LY + SCY;
 			int tilex = fetch_x / 8;
-			int tiley = (uint8_t)(LY + SCY) / 8;
+			int tiley = scanline / 8;
 			int tilenum = read(mapaddr + tiley * 32 + tilex);
 
 			if (setaddr == 0x8800) {
 				tilenum += 128;
 			}
 
-			int line = (uint8_t)(LY + SCY) % 8;
+			int line = scanline % 8;
 			uint8_t linedata1 = read(setaddr + tilenum * 16 + line * 2);
 			uint8_t linedata2 = read(setaddr + 1 + tilenum * 16 + line * 2);
 			for (int i = 0; i < 8; i++) {
@@ -39,13 +46,14 @@ void PPU::tick()
 
 			fetch_x += 8;
 
-			if (screenx == 0) {
+			if (screenx == 0 && !drawing_window) {
 				for (int i = 0; i < 8 && SCX_consumed != SCX; i++, SCX_consumed++) {
 					pixel_fifo.pop();
 				}
 			}
 		}
-		
+
+
 		Sprite* s = nullptr;
 		for (int i = 0; i < num_sprites_in_line; i++) {
 			if ((sprites_for_scanline[i].xpos - 8) == screenx) {
@@ -100,6 +108,7 @@ void PPU::tick()
 		LY++;
 		STAT.screenmode = 2;
 		fetch_x = 0;
+		drawing_window = false;
 		pixel_fifo.clear();
 
 		if (LY > 154) {

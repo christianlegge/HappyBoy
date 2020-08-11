@@ -94,6 +94,7 @@ private:
 	int cycles = 0;
 	int screenx = -1;
 	uint8_t fetch_x = 0;
+	bool drawing_window = false;
 	Sprite sprites_for_scanline[10];
 	uint8_t num_sprites_in_line;
 	Color screen[160 * 144];
