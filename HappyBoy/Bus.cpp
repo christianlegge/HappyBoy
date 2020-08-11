@@ -192,6 +192,9 @@ void Bus::write(uint16_t addr, uint8_t data)
 		ram[addr - 0x2000] = data;
 	}
 	else if (0xFE00 <= addr && addr < 0xFEA0) {
+		if (data) {
+			int x = 0;
+		}
 		ram[addr] = data;
 	}
 	else if (0xFEA0 <= addr && addr < 0xFF00) {
@@ -340,7 +343,9 @@ void Bus::write(uint16_t addr, uint8_t data)
 			ppu->LYC = data;
 		}
 		else if (addr == 0xFF46) {
-			memcpy(ram + (data << 8), ram + 0xFE00, 160);
+			for (int i = 0; i < 160; i++) {
+				ram[0xFE00 + i] = read((data << 8) + i);
+			}
 		}
 		else if (addr == 0xFF47) {
 			ppu->BGP.reg = data;
