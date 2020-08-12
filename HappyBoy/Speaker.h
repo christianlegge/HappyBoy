@@ -87,7 +87,7 @@ struct {
 			return 0;
 		}
 		if (time < start_time + length || constant) {
-			uint8_t wavebyte = (uint8_t)(time * freq * 32) % 32;
+			uint8_t wavebyte = (uint8_t)(time * freq * 32 / 2) % 32;
 			uint8_t sample = wavebyte % 2 ? waveram[wavebyte/2] >> 4 : waveram[wavebyte/2] & 0x0F;
 			return (sample) * ((l_volume + r_volume) / 14.0) * 1000 / 16.0;
 		}
