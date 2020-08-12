@@ -76,6 +76,31 @@ struct {
 	double length = 0;
 	double start_time;
 	double freq;
+	bool constant = false;
+	bool initial = false;
+	double l_volume = 0;
+	double r_volume = 0;
+	bool playing = false;
+
+	int16_t get_sample(double time, uint8_t* waveram) {
+		if (!playing) {
+			return 0;
+		}
+		if (time < start_time + length || constant) {
+			uint8_t wavebyte = (uint8_t)(time * freq * 32) % 32;
+			uint8_t sample = wavebyte % 2 ? waveram[wavebyte/2] >> 4 : waveram[wavebyte/2] & 0x0F;
+			return (sample) * ((l_volume + r_volume) / 14.0) * 1000 / 16.0;
+		}
+		else {
+			return 0;
+		}
+	}
+} channel3;
+
+struct {
+	double length = 0;
+	double start_time;
+	double freq;
 	double period;
 	bool constant = false;
 	bool initial = false;

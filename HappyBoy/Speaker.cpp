@@ -42,6 +42,18 @@ void audio_callback(void* userdata, Uint8* stream, int len)
 	channel2.constant = !s->apu->NR24.counter;
 	channel2.freq = 131072.0 / (2048 - (((s->apu->NR24.reg & 0x07) << 8) + s->apu->NR23));
 
+	if (s->apu->channel3_reset) {
+		s->apu->channel3_reset = false;
+		channel3.playing = true;
+		channel3.start_time = s->global_time;
+		channel3.length = s->apu->NR31;
+	}
+	channel3.l_volume = s->apu->NR51.sound3_to_so1 ? s->apu->NR50.so1_volume : 0;
+	channel3.r_volume = s->apu->NR51.sound3_to_so2 ? s->apu->NR50.so2_volume : 0;
+	channel3.initial = s->apu->NR34.initial;
+	channel3.constant = !s->apu->NR34.counter;
+	channel3.freq = 131072.0 / (2048 - (((s->apu->NR34.reg & 0x07) << 8) + s->apu->NR33));
+
 	if (s->apu->channel4_reset) {
 		s->apu->channel4_reset = false;
 		channel4.playing = true;		
@@ -59,7 +71,7 @@ void audio_callback(void* userdata, Uint8* stream, int len)
 	channel4.freq = 524288 / (s->apu->NR43.ratio == 0 ? 0.5 : s->apu->NR43.ratio) / (1 << (s->apu->NR43.frequency + 1));
 
 	for (int i = 0; i < len / 2; i++) {
-		((Uint16*)stream)[i] = channel1.get_sample(s->global_time) + channel2.get_sample(s->global_time) + channel4.get_sample(s->global_time);
+		((Uint16*)stream)[i] = (channel1.get_sample(s->global_time) + channel2.get_sample(s->global_time) + channel3.get_sample(s->global_time, s->apu->waveram) + channel4.get_sample(s->global_time)) * 4;
 		s->global_time += s->time_step;
 	}
 }
