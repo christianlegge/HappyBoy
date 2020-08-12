@@ -192,6 +192,9 @@ void PPU::getTilemap(Color* tilemap)
 	for (int tilex = 0; tilex < 32; tilex++) {
 		for (int tiley = 0; tiley < 32; tiley++) {
 			int tilenum = read(mapaddr + tiley * 32 + tilex);
+			if (setaddr == 0x8800) {
+				tilenum += 128;
+			}
 			for (int line = 0; line < 8; line++) {
 				uint8_t linedata1 = read(setaddr + tilenum * 16 + line * 2);
 				uint8_t linedata2 = read(setaddr + 1 + tilenum * 16 + line * 2);
