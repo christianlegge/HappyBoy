@@ -192,9 +192,6 @@ void Bus::write(uint16_t addr, uint8_t data)
 		ram[addr - 0x2000] = data;
 	}
 	else if (0xFE00 <= addr && addr < 0xFEA0) {
-		if (data) {
-			int x = 0;
-		}
 		ram[addr] = data;
 	}
 	else if (0xFEA0 <= addr && addr < 0xFF00) {

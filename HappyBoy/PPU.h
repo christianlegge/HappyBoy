@@ -1,4 +1,10 @@
 #pragma once
+#define HBLANK_MODE 0
+#define VBLANK_MODE 1
+#define OAMSCAN_MODE 2
+#define DRAWING_MODE 3
+#define OAM_CYCLES 80
+#define SCANLINE_CYCLES (20 + 43 + 51) * 4
 
 #include <cstdint>
 #include <memory>
@@ -79,7 +85,7 @@ public:
 			bool lyccheck : 1;
 			bool unused : 1;
 		};
-		uint8_t reg;
+		uint8_t reg = OAMSCAN_MODE;
 	} STAT;
 	bool stat_irq = false;
 	uint8_t SCY;
@@ -95,6 +101,7 @@ private:
 	int screenx = -1;
 	uint8_t fetch_x = 0;
 	bool drawing_window = false;
+	bool scanned_oam = false;
 	Sprite sprites_for_scanline[10];
 	uint8_t num_sprites_in_line;
 	Color screen[160 * 144];

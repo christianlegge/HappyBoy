@@ -7,22 +7,31 @@
 
 void PPU::tick()
 {
-	if (cycles > 80 && screenx < 160) {
-		screenx++;
-		if (screenx == 160) {
-			STAT.screenmode = 0;
+	cycles++;
+
+	if (STAT.screenmode == OAMSCAN_MODE) {
+		if (!scanned_oam) {
+			Sprite* oam = (Sprite*)bus->getOamPointer();
+			num_sprites_in_line = 0;
+			for (int i = 0; i < 40; i++) {
+				Sprite s = oam[i];
+				uint8_t height = LCDC.spritesize ? 16 : 8;
+				if ((s.ypos - 16) <= LY && LY < (s.ypos - 16) + height) {
+					sprites_for_scanline[num_sprites_in_line++] = s;
+					if (num_sprites_in_line >= 10) {
+						break;
+					}
+				}
+			}
+			scanned_oam = true;
+		}
+
+		if (cycles == OAM_CYCLES) {
+			STAT.screenmode = DRAWING_MODE;
 		}
 	}
 
-	if (LY < 144 && 0 <= screenx && screenx < 160) {
-		STAT.screenmode = 3;
-
-		/*if (screenx == WX && LY >= WY && LCDC.window) {
-			pixel_fifo.clear();
-			fetch_x = 0;
-			drawing_window = true;
-		}*/
-
+	else if (STAT.screenmode == DRAWING_MODE) {
 		uint8_t SCX_consumed = 0;
 		while (pixel_fifo.size() < 8) {
 			uint16_t mapaddr = drawing_window ? (LCDC.windowtilemap ? 0x9C00 : 0x9800) : (LCDC.bgtilemap ? 0x9C00 : 0x9800);
@@ -41,7 +50,7 @@ void PPU::tick()
 			uint8_t linedata2 = read(setaddr + 1 + tilenum * 16 + line * 2);
 			for (int i = 0; i < 8; i++) {
 				uint8_t color = ((linedata2 & (1 << (7 - i))) ? 2 : 0) | ((linedata1 & (1 << (7 - i))) ? 1 : 0);
-				pixel_fifo.push({color, 0});
+				pixel_fifo.push({ color, 0 });
 			}
 
 			fetch_x += 8;
@@ -52,7 +61,6 @@ void PPU::tick()
 				}
 			}
 		}
-
 
 		Sprite* s = nullptr;
 		for (int i = 0; i < num_sprites_in_line; i++) {
@@ -106,50 +114,49 @@ void PPU::tick()
 			screen[LY * 160 + screenx] = index[pal.c3];
 			break;
 		}
+
+		screenx++;
+		if (screenx == 160) {
+			STAT.screenmode = HBLANK_MODE;
+		}
 	}
 
-	cycles++;
-
-	if (cycles > (20 + 43 + 51) * 4) {
-		cycles = 0;
-		screenx = -1;
-		LY++;
-		STAT.screenmode = 2;
-		fetch_x = 0;
-		drawing_window = false;
-		pixel_fifo.clear();
-
-		if (LY > 154) {
-			screenFrameReady = true;
-			LY = 0;
-			STAT.screenmode = 2;
-		}
-
-		Sprite* oam = (Sprite*)bus->getOamPointer();
-		num_sprites_in_line = 0;
-		for (int i = 0; i < 40; i++) {
-			Sprite s = oam[i];
-			uint8_t height = LCDC.spritesize ? 16 : 8;
-			if ((s.ypos - 16) <= LY && LY < (s.ypos - 16) + height) {
-				sprites_for_scanline[num_sprites_in_line++] = s;
-				if (num_sprites_in_line >= 10) {
-					break;
-				}
+	else if (STAT.screenmode == HBLANK_MODE) {
+		if (cycles > SCANLINE_CYCLES) {
+			cycles = 0;
+			pixel_fifo.clear();
+			fetch_x = 0;
+			screenx = 0;
+			scanned_oam = false;
+			drawing_window = false;
+			LY++;
+			if (LY >= 144) {
+				STAT.screenmode = VBLANK_MODE;
+				cpu->interrupt(0x0040);
 			}
-
+			else {
+				STAT.screenmode = OAMSCAN_MODE;
+			}
 		}
+	}
 
-		if (LY == 144) {
-			cpu->interrupt(0x0040);
-			STAT.screenmode = 3;
+	else if (STAT.screenmode == VBLANK_MODE) {
+		if (cycles == SCANLINE_CYCLES) {
+			cycles = 0;
+			LY++;
+			if (LY >= 154) {
+				screenFrameReady = true;
+				LY = 0;
+				STAT.screenmode = OAMSCAN_MODE;
+			}
 		}
 	}
 
 	bool tmp = stat_irq;
 	stat_irq = ((LY == LYC) && STAT.lyccheck) ||
-		((STAT.screenmode == 0) && STAT.hcheck) ||
-		((STAT.screenmode == 2) && STAT.oamcheck) ||
-		((STAT.screenmode == 1) && (STAT.vcheck || STAT.oamcheck));
+		((STAT.screenmode == HBLANK_MODE) && STAT.hcheck) ||
+		((STAT.screenmode == OAMSCAN_MODE) && STAT.oamcheck) ||
+		((STAT.screenmode == VBLANK_MODE) && (STAT.vcheck || STAT.oamcheck));
 	if (stat_irq && !tmp) {
 		cpu->interrupt(0x0048);
 	}
@@ -162,7 +169,7 @@ Color* PPU::getScreen()
 
 bool PPU::frameComplete()
 {
-	return LY == 0 && cycles == 0;
+	return LY == 0 && cycles == 1;
 }
 
 bool PPU::getScreenFrameReady()
