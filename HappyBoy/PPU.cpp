@@ -40,7 +40,7 @@ void PPU::tick()
 			uint8_t linedata1 = read(setaddr + tilenum * 16 + line * 2);
 			uint8_t linedata2 = read(setaddr + 1 + tilenum * 16 + line * 2);
 			for (int i = 0; i < 8; i++) {
-				uint8_t color = ((linedata1 & (1 << (7 - i))) ? 2 : 0) | ((linedata2 & (1 << (7 - i))) ? 1 : 0);
+				uint8_t color = ((linedata2 & (1 << (7 - i))) ? 2 : 0) | ((linedata1 & (1 << (7 - i))) ? 1 : 0);
 				pixel_fifo.push({color, 0});
 			}
 
@@ -177,7 +177,7 @@ void PPU::getTileset(Color* tileset)
 				for (int col = 0; col < 8; col++) {
 					int screenx = tilex * 8 + col;
 					int screeny = tiley * 8 + line;
-					int color = ((linedata1 & (1 << (7 - col))) ? 2 : 0) + ((linedata2 & (1 << (7 - col))) ? 1 : 0);
+					int color = ((linedata2 & (1 << (7 - col))) ? 2 : 0) + ((linedata1 & (1 << (7 - col))) ? 1 : 0);
 					tileset[screeny * 16 * 8 + screenx] = index[color];
 				}
 			}
@@ -201,7 +201,7 @@ void PPU::getTilemap(Color* tilemap)
 				for (int col = 0; col < 8; col++) {
 					int screenx = tilex * 8 + col;
 					int screeny = tiley * 8 + line;
-					int color = ((linedata1 & (1 << (7 - col))) ? 2 : 0) + ((linedata2 & (1 << (7 - col))) ? 1 : 0);
+					int color = ((linedata2 & (1 << (7 - col))) ? 2 : 0) + ((linedata1 & (1 << (7 - col))) ? 1 : 0);
 					tilemap[screeny * 32 * 8 + screenx] = index[color];
 				}
 			}
