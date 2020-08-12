@@ -67,11 +67,19 @@ void PPU::tick()
 			int line = (uint8_t)(LY - (s->ypos - 16));
 			uint8_t linedata1 = read(setaddr + s->tile * 16 + line * 2);
 			uint8_t linedata2 = read(setaddr + 1 + s->tile * 16 + line * 2);
-			for (int i = 0; i < 8; i++) {
-				uint8_t color = ((linedata1 & (1 << (7 - i))) ? 2 : 0) | ((linedata2 & (1 << (7 - i))) ? 1 : 0);
-				p[i] = { color, 1 };
+			if (s->flags.xflip) {
+				for (int i = 0; i < 8; i++) {
+					uint8_t color = ((linedata1 & (1 << (i))) ? 2 : 0) | ((linedata2 & (1 << (i))) ? 1 : 0);
+					p[i] = { color, 1 };
+				}
 			}
-			pixel_fifo.mix_sprite(p);
+			else {
+				for (int i = 0; i < 8; i++) {
+					uint8_t color = ((linedata1 & (1 << (7 - i))) ? 2 : 0) | ((linedata2 & (1 << (7 - i))) ? 1 : 0);
+					p[i] = { color, 1 };
+				}
+			}
+			pixel_fifo.mix_sprite(p, s->flags.priority);
 
 		}
 

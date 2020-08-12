@@ -12,12 +12,12 @@ typedef struct {
 	uint8_t tile;
 	union {
 		struct {
-			bool priority : 1;
-			bool yflip : 1;
-			bool xflip : 1;
-			bool dmg_palette : 1;
-			bool bank : 1;
 			uint8_t cgb_palette : 3;
+			bool bank : 1;
+			bool dmg_palette : 1;
+			bool xflip : 1;
+			bool yflip : 1;
+			bool priority : 1;
 		};
 		uint8_t reg;
 	} flags;
@@ -140,9 +140,9 @@ private:
 			}
 		}
 
-		void mix_sprite(Pixel sprite[]) {
+		void mix_sprite(Pixel sprite[], bool priority) {
 			for (int i = 0; i < 8; i++) {
-				if (sprite[i].color != 0) {
+				if (sprite[i].color != 0 && (!priority || pixels[(leftbound + 1 + i) % 16].color == 0)) {
 					pixels[(leftbound + 1 + i) % 16] = sprite[i];
 				}
 			}
