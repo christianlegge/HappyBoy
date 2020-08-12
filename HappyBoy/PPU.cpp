@@ -30,7 +30,7 @@ void PPU::tick()
 			uint8_t scanline = drawing_window ? LY - WY : LY + SCY;
 			int tilex = fetch_x / 8;
 			int tiley = scanline / 8;
-			int tilenum = read(mapaddr + tiley * 32 + tilex);
+			uint8_t tilenum = read(mapaddr + tiley * 32 + tilex);
 
 			if (setaddr == 0x8800) {
 				tilenum += 128;
@@ -191,7 +191,7 @@ void PPU::getTilemap(Color* tilemap)
 	uint16_t setaddr = LCDC.bgtileset ? 0x8000 : 0x8800;
 	for (int tilex = 0; tilex < 32; tilex++) {
 		for (int tiley = 0; tiley < 32; tiley++) {
-			int tilenum = read(mapaddr + tiley * 32 + tilex);
+			uint8_t tilenum = read(mapaddr + tiley * 32 + tilex);
 			if (setaddr == 0x8800) {
 				tilenum += 128;
 			}
