@@ -30,7 +30,7 @@ enum class ConditionMode {
 class CPU
 {
 public:
-	CPU(std::shared_ptr<Bus> bus);
+	CPU(std::shared_ptr<Bus> bus, std::shared_ptr<APU> apu);
 	uint16_t tick();
 	std::vector<std::string> getDisassembly(int lines);
 	std::vector<std::string> getRegisters();
@@ -217,4 +217,5 @@ private:
 	std::string registerString(uint8_t reg, std::string name);
 
 	std::shared_ptr<Bus> bus;
+	std::shared_ptr<APU> apu;
 };

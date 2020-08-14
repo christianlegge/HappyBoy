@@ -627,7 +627,7 @@ void CPU::writeBus(uint16_t addr, uint8_t data)
 	bus->write(addr, data);
 }
 
-CPU::CPU(std::shared_ptr<Bus> bus) : bus(bus)
+CPU::CPU(std::shared_ptr<Bus> bus, std::shared_ptr<APU> apu) : bus(bus), apu(apu)
 {
 	opcode_funcs = {
  /*0x*/	&CPU::NOP, &CPU::LD<AddressingMode::RegisterBC, AddressingMode::Immediate16, uint16_t>, &CPU::LD<AddressingMode::AbsoluteBC, AddressingMode::RegisterA>, &CPU::INC<AddressingMode::RegisterBC, uint16_t>, &CPU::INC<AddressingMode::RegisterB>, &CPU::DEC<AddressingMode::RegisterB>, &CPU::LD<AddressingMode::RegisterB, AddressingMode::Immediate8>, &CPU::RLCA, &CPU::LD<AddressingMode::Absolute16Double, AddressingMode::RegisterSP, uint16_t>, &CPU::ADD<AddressingMode::RegisterHL, AddressingMode::RegisterBC, uint16_t>, &CPU::LD<AddressingMode::RegisterA, AddressingMode::AbsoluteBC>, &CPU::DEC<AddressingMode::RegisterBC, uint16_t>, &CPU::INC<AddressingMode::RegisterC>, &CPU::DEC<AddressingMode::RegisterC>, &CPU::LD<AddressingMode::RegisterC, AddressingMode::Immediate8>, &CPU::RRCA,
@@ -857,6 +857,15 @@ uint16_t CPU::tick() {
 	}
 	else {
 		counter++;
+	}
+
+	uint16_t mask = 0xFFFF;
+	for (int i = 15; i >= 13; i--) {
+		if ((counter & mask) == 0) {
+			apu->divFlipped(i);
+			break;
+		}
+		mask >>= 1;
 	}
 
 	return PC;

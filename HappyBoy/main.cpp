@@ -80,7 +80,7 @@ int main(int argc, char* argv[]) {
 	bootfile.read((char*)bootrom, 256);
 
 	//std::ifstream romfile("mooneye/acceptance/interrupts/ie_push.gb", std::ios_base::binary);
-	std::ifstream romfile("sml.gb", std::ios_base::binary);
+	std::ifstream romfile("tetris.gb", std::ios_base::binary);
 	//std::ifstream romfile("blargg_dmg_sound/02-len ctr.gb", std::ios_base::binary);
 	//std::ifstream romfile("mealybug/m3_scy_change.gb", std::ios_base::binary);
 	romfile.seekg(0, std::ios::end);
@@ -113,7 +113,7 @@ int main(int argc, char* argv[]) {
 	bus->bootrom = bootrom;
 	bus->cart = mapper;
 	ppu->bus = bus;
-	std::shared_ptr<CPU> cpu = std::make_shared<CPU>(bus);
+	std::shared_ptr<CPU> cpu = std::make_shared<CPU>(bus, apu);
 	ppu->cpu = cpu;
 	bus->cpu = cpu;
 	std::shared_ptr<Clock> clock = std::make_shared<Clock>(cpu, ppu, apu);

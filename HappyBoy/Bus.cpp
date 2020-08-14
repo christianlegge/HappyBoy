@@ -235,7 +235,7 @@ void Bus::write(uint16_t addr, uint8_t data)
 			else if (addr == 0xFF14) {
 				apu->NR14.reg = data;
 				if (apu->NR14.initial) {
-					apu->channel1_reset = true;
+					apu->NR52.sound1_on = true;
 				}
 			}
 			else if (addr == 0xFF16) {
@@ -250,7 +250,7 @@ void Bus::write(uint16_t addr, uint8_t data)
 			else if (addr == 0xFF19) {
 				apu->NR24.reg = data;
 				if (apu->NR24.initial) {
-					apu->channel2_reset = true;
+					apu->NR52.sound2_on = true;
 				}
 			}
 			else if (addr == 0xFF1A) {
@@ -283,7 +283,7 @@ void Bus::write(uint16_t addr, uint8_t data)
 			else if (addr == 0xFF23) {
 				apu->NR44.reg = data;
 				if (apu->NR44.initial) {
-					apu->channel4_reset = true;
+					apu->NR52.sound4_on = true;
 				}
 			}
 			else if (addr == 0xFF24) {

@@ -1,15 +1,14 @@
 #pragma once
 
 #include <cstdint>
+#include <atomic>
 
 class APU
 {
 public:
 	uint8_t getSoundValue();
-	bool channel1_reset = false;
-	bool channel2_reset = false;
-	bool channel3_reset = false;
-	bool channel4_reset = false;
+	void divFlipped(uint8_t bit);
+	uint8_t shift_channel4_reg(int runs);
 	union {
 		struct {
 			uint8_t sweep_shift : 3;
@@ -130,6 +129,7 @@ public:
 		};
 		uint8_t reg = 0xBF;
 	} NR44;
+	std::atomic<uint16_t> noise_shift_reg = 0x1234;
 
 	union {
 		struct {
@@ -164,5 +164,12 @@ public:
 		};
 		uint8_t reg;
 	} NR52;
+
+private:
+	uint8_t channel1_sweep_count = 0;
+	uint8_t channel1_envelope_count = 0;
+	uint8_t channel2_envelope_count = 0;
+	uint8_t channel4_envelope_count = 0;
+	uint8_t channel4_frequency_count = 0;
 };
 
