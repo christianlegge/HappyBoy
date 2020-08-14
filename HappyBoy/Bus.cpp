@@ -268,7 +268,7 @@ void Bus::write(uint16_t addr, uint8_t data)
 			else if (addr == 0xFF1E) {
 				apu->NR34.reg = data;
 				if (apu->NR34.initial) {
-					apu->channel3_reset = true;
+					apu->NR52.sound3_on = true;
 				}
 			}
 			else if (addr == 0xFF20) {
