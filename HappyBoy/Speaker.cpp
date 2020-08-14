@@ -38,7 +38,7 @@ void audio_callback(void* userdata, Uint8* stream, int len)
 			(s->apu->NR52.sound2_on ? channel2.get_sample(s->global_time) : 0) + 
 			(s->apu->NR52.sound3_on ? channel3.get_sample(s->global_time, s->apu->waveram) : 0) + 
 			(s->apu->NR52.sound4_on ? channel4.get_sample(s->global_time) : 0)
-			) * 4;
+			);
 		s->global_time += s->time_step;
 	}
 }
