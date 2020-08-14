@@ -8,7 +8,7 @@ class APU
 public:
 	uint8_t getSoundValue();
 	void divFlipped(uint8_t bit);
-	uint8_t shift_channel4_reg(int runs);
+	uint8_t shift_channel4_reg();
 	union {
 		struct {
 			uint8_t sweep_shift : 3;

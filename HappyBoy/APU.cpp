@@ -111,14 +111,8 @@ void APU::divFlipped(uint8_t bit)
 	}
 }
 
-uint8_t APU::shift_channel4_reg(int runs) {
-	uint8_t bit;
-	for (int i = 0; i < runs % (1 << 16); i++) {
-		bit = ((noise_shift_reg >> 0) ^ (noise_shift_reg >> 1)) & 0x01;
-		noise_shift_reg = (noise_shift_reg >> 1) | (bit << 15);
-		if (NR43.width) {
-			noise_shift_reg |= (bit << 7);
-		}
-	}
+uint8_t APU::shift_channel4_reg() {
+	uint8_t bit = ((noise_shift_reg >> 0) ^ (noise_shift_reg >> 1)) & 0x01;
+	noise_shift_reg = (noise_shift_reg >> 1) | (bit << 15);
 	return bit;
 }

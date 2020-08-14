@@ -58,7 +58,7 @@ struct {
 
 	int16_t get_sample(double time) {
 		double volume_mod = envelope_volume / 15.0;
-		return apu->shift_channel4_reg(freq/44100) * volume_mod * 1000;
+		return apu->shift_channel4_reg() * volume_mod * 1000;
 	}
 } channel4;
 
