@@ -87,22 +87,25 @@ void APU::divFlipped(uint8_t bit)
 	}
 	if (bit >= 13) {
 		// 256 Hz
-		if (NR14.counter && NR52.sound1_on) {
+		if (NR14.counter) {
 			NR11.sound_length++;
 			if (NR11.sound_length == 0) {
 				NR52.sound1_on = false;
 			}
-		}if (NR24.counter && NR52.sound2_on) {
+		}
+		if (NR24.counter) {
 			NR21.length++;
 			if (NR21.length == 0) {
 				NR52.sound2_on = false;
 			}
-		}if (NR34.counter && NR52.sound3_on) {
+		}
+		if (NR34.counter) {
 			NR31++;
 			if (NR31 == 0) {
 				NR52.sound3_on = false;
 			}
-		}if (NR44.counter && NR52.sound4_on) {
+		}
+		if (NR44.counter) {
 			NR41.length++;
 			if (NR41.length == 0) {
 				NR52.sound4_on = false;
