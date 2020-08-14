@@ -228,13 +228,16 @@ void Bus::write(uint16_t addr, uint8_t data)
 			}
 			else if (addr == 0xFF12) {
 				apu->NR12.reg = data;
+				if ((apu->NR12.reg & 0xF8) == 0) {
+					apu->NR52.sound1_on = false;
+				}
 			}
 			else if (addr == 0xFF13) {
 				apu->NR13 = data;
 			}
 			else if (addr == 0xFF14) {
 				apu->NR14.reg = data;
-				if (apu->NR14.initial) {
+				if (apu->NR14.initial && (apu->NR12.reg & 0xF8)) {
 					apu->NR52.sound1_on = true;
 				}
 			}
@@ -243,18 +246,24 @@ void Bus::write(uint16_t addr, uint8_t data)
 			}
 			else if (addr == 0xFF17) {
 				apu->NR22.reg = data;
+				if ((apu->NR22.reg & 0xF8) == 0) {
+					apu->NR52.sound2_on = false;
+				}
 			}
 			else if (addr == 0xFF18) {
 				apu->NR23 = data;
 			}
 			else if (addr == 0xFF19) {
 				apu->NR24.reg = data;
-				if (apu->NR24.initial) {
+				if (apu->NR24.initial && (apu->NR22.reg & 0xF8)) {
 					apu->NR52.sound2_on = true;
 				}
 			}
 			else if (addr == 0xFF1A) {
 				apu->NR30.reg = data;
+				if (!apu->NR30.enable) {
+					apu->NR52.sound3_on = false;
+				}
 			}
 			else if (addr == 0xFF1B) {
 				apu->NR31 = data;
@@ -267,7 +276,7 @@ void Bus::write(uint16_t addr, uint8_t data)
 			}
 			else if (addr == 0xFF1E) {
 				apu->NR34.reg = data;
-				if (apu->NR34.initial) {
+				if (apu->NR34.initial && apu->NR30.enable) {
 					apu->NR52.sound3_on = true;
 				}
 			}
@@ -276,13 +285,16 @@ void Bus::write(uint16_t addr, uint8_t data)
 			}
 			else if (addr == 0xFF21) {
 				apu->NR42.reg = data;
+				if ((apu->NR42.reg & 0xF8) == 0) {
+					apu->NR52.sound4_on = false;
+				}
 			}
 			else if (addr == 0xFF22) {
 				apu->NR43.reg = data;
 			}
 			else if (addr == 0xFF23) {
 				apu->NR44.reg = data;
-				if (apu->NR44.initial) {
+				if (apu->NR44.initial && (apu->NR42.reg & 0xF8)) {
 					apu->NR52.sound4_on = true;
 				}
 			}
@@ -291,6 +303,18 @@ void Bus::write(uint16_t addr, uint8_t data)
 			}
 			else if (addr == 0xFF25) {
 				apu->NR51.reg = data;
+				if (!(data & 0x11)) {
+					apu->NR52.sound1_on = false;
+				}
+				if (!(data & 0x22)) {
+					apu->NR52.sound2_on = false;
+				}
+				if (!(data & 0x44)) {
+					apu->NR52.sound3_on = false;
+				}
+				if (!(data & 0x88)) {
+					apu->NR52.sound4_on = false;
+				}
 			}
 		}
 		else if (addr == 0xFF26) {
@@ -310,7 +334,7 @@ void Bus::write(uint16_t addr, uint8_t data)
 				apu->NR32.reg = 0;
 				apu->NR33 = 0;
 				apu->NR34.reg = 0;
-				//apu->NR41.reg = 0;
+				apu->NR41.reg = 0;
 				apu->NR42.reg = 0;
 				apu->NR43.reg = 0;
 				apu->NR44.reg = 0;

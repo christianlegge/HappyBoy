@@ -27,9 +27,6 @@ void APU::divFlipped(uint8_t bit)
 					if (NR12.volume != 0x00) {
 						NR12.volume--;
 					}
-					if (NR12.volume == 0x00) {
-						NR52.sound1_on = false;
-					}
 				}
 			}
 		}
@@ -46,9 +43,6 @@ void APU::divFlipped(uint8_t bit)
 					if (NR22.volume != 0x00) {
 						NR22.volume--;
 					}
-					if (NR22.volume == 0x00) {
-						NR52.sound2_on = false;
-					}
 				}
 			}
 		}
@@ -64,9 +58,6 @@ void APU::divFlipped(uint8_t bit)
 				else {
 					if (NR42.volume != 0x00) {
 						NR42.volume--;
-					}
-					if (NR42.volume == 0x00) {
-						NR52.sound4_on = false;
 					}
 				}
 			}
