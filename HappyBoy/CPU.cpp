@@ -780,7 +780,7 @@ CPU::CPU(std::shared_ptr<Bus> bus, std::shared_ptr<APU> apu) : bus(bus), apu(apu
 }
 
 uint16_t CPU::tick() {
-	if (!halted) {
+	if (!halted && !waiting_cycles) {
 		if (ime) {
 			uint16_t addr = 0;
 			if (IF.vblank && IE.vblank) {
@@ -806,6 +806,7 @@ uint16_t CPU::tick() {
 
 			if (addr) {
 				ime = false;
+				waiting_cycles = 20;
 				writeBus(--SP, PC >> 8);
 				writeBus(--SP, PC & 0b11111111);
 				PC = addr;
@@ -866,6 +867,10 @@ uint16_t CPU::tick() {
 			break;
 		}
 		mask >>= 1;
+	}
+
+	if (waiting_cycles > 0) {
+		waiting_cycles--;
 	}
 
 	return PC;
@@ -954,30 +959,45 @@ void CPU::interrupt(uint16_t addr)
 	if (addr == 0x0040) {
 		IF.vblank = true;
 		if (IE.vblank) {
+			if (halted) {
+				waiting_cycles = 4;
+			}
 			halted = false;
 		}
 	}
 	else if (addr == 0x0048) {
 		IF.lcdc = true;
 		if (IE.lcdc) {
+			if (halted) {
+				waiting_cycles = 4;
+			}
 			halted = false;
 		}
 	}
 	else if (addr == 0x0050) {
 		IF.timer = true;
 		if (IE.timer) {
+			if (halted) {
+				waiting_cycles = 4;
+			}
 			halted = false;
 		}
 	}
 	else if (addr == 0x0058) {
 		IF.serial = true;
 		if (IE.serial) {
+			if (halted) {
+				waiting_cycles = 4;
+			}
 			halted = false;
 		}
 	}
 	else if (addr == 0x0060) {
 		IF.joypad = true;
 		if (IE.joypad) {
+			if (halted) {
+				waiting_cycles = 4;
+			}
 			halted = false;
 		}
 	}

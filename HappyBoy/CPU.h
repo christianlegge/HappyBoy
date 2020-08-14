@@ -215,6 +215,7 @@ private:
 	void undefined();
 
 	std::string registerString(uint8_t reg, std::string name);
+	int waiting_cycles = 0;
 
 	std::shared_ptr<Bus> bus;
 	std::shared_ptr<APU> apu;
