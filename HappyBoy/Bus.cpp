@@ -217,7 +217,7 @@ void Bus::write(uint16_t addr, uint8_t data)
 			cpu->IF.reg = data;
 		}
 		else if (0xFF10 <= addr && addr < 0xFF26) {
-			if (!apu->NR52.allsound_on) {
+			if (!apu->NR52.allsound_on && addr != 0xFF20) {
 				return;
 			}
 			if (addr == 0xFF10) {
@@ -334,12 +334,12 @@ void Bus::write(uint16_t addr, uint8_t data)
 				apu->NR32.reg = 0;
 				apu->NR33 = 0;
 				apu->NR34.reg = 0;
-				apu->NR41.reg = 0;
 				apu->NR42.reg = 0;
 				apu->NR43.reg = 0;
 				apu->NR44.reg = 0;
 				apu->NR50.reg = 0;
 				apu->NR51.reg = 0;
+				apu->NR52.reg = 0;
 			}
 		}
 		else if (0xFF30 <= addr && addr < 0xFF40) {
